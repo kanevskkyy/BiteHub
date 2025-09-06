@@ -16,3 +16,8 @@ class CloudinaryUploader:
             api_key=app.config['CLOUDINARY_API_KEY'],
             api_secret=app.config['CLOUDINARY_API_SECRET'],
         )
+
+    @staticmethod
+    def delete_file(file_url: str):
+        public_id = file_url.split('/')[-1].split('.')[0]
+        cloudinary.uploader.destroy(public_id)

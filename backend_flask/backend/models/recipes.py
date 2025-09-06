@@ -13,6 +13,7 @@ class Recipe(db.Model):
     description = db.Column(db.Text, nullable=False)
     duration = db.Column(db.Integer, nullable=False)
     image_url = db.Column(URLType, nullable=True)
+    created_at = db.Column(db.DateTime, nullable=False, default=db.func.now())
 
     author_id = db.Column(UUID(as_uuid=True), db.ForeignKey('users.id'), nullable=False)
     author = db.relationship('User', backref='recipes')

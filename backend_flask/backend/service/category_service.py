@@ -3,9 +3,8 @@ from uuid import UUID
 
 from injector import inject
 from werkzeug.datastructures import FileStorage
-
-from backend import CategoryRepository
 from backend.helpers.cloudinary_uploader import CloudinaryUploader
+from backend.repositories.category_repository import CategoryRepository
 from backend.schemas.category_schema import categories_schema, category_schema
 
 
@@ -33,6 +32,8 @@ class CategoryService:
 
         if icon_file:
             category.icon_url = CloudinaryUploader.upload_file(icon_file, folder='category')
+        else:
+            raise ValueError('Category need to have image!')
 
         created_category = self.__repository.create(category)
         return category_schema.dump(created_category)
@@ -49,6 +50,8 @@ class CategoryService:
         category.name = validated_category.name
         if icon_file:
             category.icon_url = CloudinaryUploader.upload_file(icon_file, folder='category')
+        else:
+            raise ValueError('Category need to have image!')
 
         category = self.__repository.update(category)
         return category_schema.dump(category)
@@ -57,6 +60,9 @@ class CategoryService:
         category = self.__repository.get_by_id(id)
         if category is None:
             raise ValueError(f'Cannot find category with id: {id}!')
+
+        if category.icon_url:
+            CloudinaryUploader.delete_file(category.icon_url)
 
         self.__repository.delete(category)
 
