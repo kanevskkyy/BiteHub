@@ -10,7 +10,7 @@ class RecipeIngredient(db.Model):
     quantity = db.Column(db.Float, nullable=False)
 
     recipe = db.relationship('Recipe', backref=db.backref('recipe_ingredients', lazy=True), foreign_keys=[recipe_id])
-    ingredient = db.relationship('Ingredient', backref=db.backref('recipe_ingredients', lazy=True), foreign_keys=[ingredient_id])
+    ingredient = db.relationship('Ingredients', backref=db.backref('recipe_ingredients', lazy=True), foreign_keys=[ingredient_id])
 
     __table_args__ = (
         db.CheckConstraint('quantity > 0', name='ck_recipe_ingredients_quantity_valid'),

@@ -6,3 +6,4 @@ from .recipes import Recipe
 from .recipe_ingredients import RecipeIngredient
 from .ratings import Rating
 from .recipe_categories import RecipeCategory
+from .recipe_step import RecipeStep
