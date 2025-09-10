@@ -4,6 +4,7 @@ from uuid import UUID
 from injector import inject
 from werkzeug.datastructures import FileStorage
 from backend.helpers.cloudinary_uploader import CloudinaryUploader
+from backend.models import Category
 from backend.repositories.category_repository import CategoryRepository
 from backend.schemas.category_schema import categories_schema, category_schema
 
@@ -25,36 +26,33 @@ class CategoryService:
         return category_schema.dump(category)
 
     def create(self, data: dict, icon_file: Optional[FileStorage] = None):
-        category = category_schema.load(data)
-
-        if self.__repository.is_name_exists(category.name):
+        if self.__repository.is_name_exists(data['name']):
             raise ValueError('Category with this name already exists!')
 
-        if icon_file:
-            category.icon_url = CloudinaryUploader.upload_file(icon_file, folder='category')
-        else:
-            raise ValueError('Category need to have image!')
+        if not icon_file:
+            raise ValueError('Category needs to have image!')
+
+        category = Category(**data)
+        category.icon_url = CloudinaryUploader.upload_file(icon_file, folder='category')
 
         created_category = self.__repository.create(category)
         return category_schema.dump(created_category)
 
     def update(self, id: UUID, data: dict, icon_file: Optional[FileStorage] = None):
         category = self.__repository.get_by_id(id)
-        validated_category = category_schema.load(data)
         if category is None:
             raise ValueError(f'Cannot find category with id: {id}!')
 
-        if self.__repository.is_name_exists(validated_category.name, id):
+        if self.__repository.is_name_exists(data['name'], id):
             raise ValueError('Category with this name already exists!')
 
-        category.name = validated_category.name
+        category.name = data['name']
+
         if icon_file:
             category.icon_url = CloudinaryUploader.upload_file(icon_file, folder='category')
-        else:
-            raise ValueError('Category need to have image!')
 
-        category = self.__repository.update(category)
-        return category_schema.dump(category)
+        updated_category = self.__repository.update(category)
+        return category_schema.dump(updated_category)
 
     def delete(self, id: UUID) -> bool:
         category = self.__repository.get_by_id(id)

@@ -2,8 +2,8 @@ from flask import Flask
 from flask_injector import FlaskInjector
 import backend.models
 from backend.extensions import db, api
-from backend.routes.api_router import APIRouter
 from backend.helpers.cloudinary_uploader import CloudinaryUploader
+from backend.routes.api_router import APIRouter
 from backend.di import DIConfig
 
 

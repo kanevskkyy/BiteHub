@@ -4,6 +4,7 @@ from flask_restx import Namespace, Resource
 from injector import inject
 from marshmallow import ValidationError
 
+from backend.schemas.ingredient_schema import ingredient_schema
 from backend.service.ingredient_service import IngredientsService
 
 ingredient_namespace = Namespace('Ingredient', description='Ingredient related operations')
@@ -24,7 +25,8 @@ class IngredientList(Resource):
         data = request.form.to_dict()
         icon_file = request.files.get('iconFile')
         try:
-            new_ingredient = self._ingredient_service.create(data, icon_file)
+            validated_data = ingredient_schema.load(data)
+            new_ingredient = self._ingredient_service.create(validated_data, icon_file)
             return new_ingredient, 201
         except ValidationError as ve:
             return {'errors': ve.messages}, 400
@@ -48,9 +50,10 @@ class IngredientItem(Resource):
 
     def put(self, id: UUID):
         data = request.form.to_dict()
-        icon_file = request.files.get('iconFile')
+        icon_file = request.files.get('icon File')
         try:
-            updated_ingredient = self._ingredient_service.update(id, data, icon_file)
+            validated_data = ingredient_schema.load(data)
+            updated_ingredient = self._ingredient_service.update(id, validated_data, icon_file)
             return updated_ingredient, 200
         except ValidationError as ve:
             return {'errors': ve.messages}, 400
@@ -60,6 +63,6 @@ class IngredientItem(Resource):
     def delete(self, id: UUID):
         try:
             self._ingredient_service.delete(id)
-            return {'message': f'Ingredient {id} deleted successfully'}, 200
+            return 204
         except ValueError as e:
             return {'error': str(e)}, 404

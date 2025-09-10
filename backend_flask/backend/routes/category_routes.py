@@ -2,6 +2,8 @@ from flask import request
 from flask_restx import Namespace, Resource
 from injector import inject
 from marshmallow import ValidationError
+
+from backend.schemas.category_schema import category_schema
 from backend.service import CategoryService
 
 
@@ -22,7 +24,8 @@ class CategoryList(Resource):
         data = request.form.to_dict()
         icon_file = request.files.get('iconFile')
         try:
-            new_category = self._category_service.create(data, icon_file)
+            validated_data = category_schema.load(data)
+            new_category = self._category_service.create(validated_data, icon_file)
             return new_category, 201
         except ValidationError as e:
             return {'error': e.messages}, 400
@@ -46,7 +49,8 @@ class CategoryItem(Resource):
         data = request.form.to_dict()
         icon_file = request.files.get('iconFile')
         try:
-            updated_category = self._category_service.update(id, data, icon_file)
+            validated_data = category_schema.load(data)
+            updated_category = self._category_service.update(id, validated_data, icon_file)
             return updated_category, 200
         except ValueError as e:
             return {'error': str(e)}, 400
@@ -56,6 +60,6 @@ class CategoryItem(Resource):
     def delete(self, id):
         try:
             self._category_service.delete(id)
-            return {'message': f'Category {id} deleted successfully'}, 200
+            return 204
         except ValueError as e:
             return {'error': str(e)}, 404

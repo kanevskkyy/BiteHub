@@ -14,6 +14,7 @@ class Recipe(db.Model):
     duration = db.Column(db.Integer, nullable=False)
     image_url = db.Column(URLType, nullable=True)
     created_at = db.Column(db.DateTime, nullable=False, default=db.func.now())
+    servings_count = db.Column(db.Integer, nullable=False, default=1)
 
     author_id = db.Column(UUID(as_uuid=True), db.ForeignKey('users.id'), nullable=False)
     author = db.relationship('User', backref='recipes')
@@ -23,4 +24,5 @@ class Recipe(db.Model):
         db.CheckConstraint('length(trim(description)) > 0', name='ck_recipes_description_required'),
         db.UniqueConstraint('author_id', 'title', name='uq_recipes_author_id_title'),
         db.CheckConstraint('duration > 0', name='ck_recipes_duration_valid'),
+        db.CheckConstraint('servings_count > 0', name='ck_recipes_servings_count_valid'),
     )

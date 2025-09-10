@@ -18,10 +18,6 @@ class IngredientSchema(Schema):
 
         return name
 
-    @post_load
-    def make_ingredient(self, data, **kwargs):
-        return Ingredients(**data)
-
 
 ingredient_schema = IngredientSchema()
 ingredients_schema = IngredientSchema(many=True)

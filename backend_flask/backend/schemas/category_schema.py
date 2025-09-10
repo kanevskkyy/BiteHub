@@ -18,10 +18,6 @@ class CategorySchema(Schema):
 
         return name
 
-    @post_load
-    def create_category(self, data: dict, **kwargs) -> Category:
-        return Category(**data)
-
 
 category_schema = CategorySchema()
 categories_schema = CategorySchema(many=True)
