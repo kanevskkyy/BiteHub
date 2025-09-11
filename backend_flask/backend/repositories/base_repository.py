@@ -19,11 +19,13 @@ class BaseRepository(ABC, Generic[T]):
     def create(self, entity: T) -> T:
         self._session.add(entity)
         self._session.commit()
+        self._session.refresh(entity)
         return entity
 
     def update(self, entity: T) -> T:
         entity = self._session.merge(entity)
         self._session.commit()
+        self._session.refresh(entity)
         return entity
 
     def delete(self, entity: T) -> None:

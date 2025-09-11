@@ -1,9 +1,6 @@
-from typing import Optional, Dict, Any
 from uuid import UUID
-
 from backend import db
 from backend.models import User
-from backend.pagination.paginated_result import PaginatedResult
 from backend.repositories.base_repository import BaseRepository
 
 
