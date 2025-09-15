@@ -19,6 +19,22 @@ class Recipe(db.Model):
     author_id = db.Column(UUID(as_uuid=True), db.ForeignKey('users.id'), nullable=False)
     author = db.relationship('User', backref='recipes')
 
+    steps = db.relationship(
+        'RecipeStep',
+        cascade='all, delete-orphan',
+        passive_deletes=True
+    )
+    recipe_ingredients = db.relationship(
+        'RecipeIngredient',
+        cascade='all, delete-orphan',
+        passive_deletes=True
+    )
+    recipe_categories = db.relationship(
+        'RecipeCategory',
+        cascade='all, delete-orphan',
+        passive_deletes=True
+    )
+
     __table_args__ = (
         db.CheckConstraint('length(trim(title)) > 0', name='ck_recipes_title_required'),
         db.CheckConstraint('length(trim(description)) > 0', name='ck_recipes_description_required'),

@@ -5,7 +5,6 @@ from injector import inject
 from backend.models import Reviews
 from backend.repositories.review_repository import ReviewRepository
 from backend.schemas.review_schemas.review_schema import review_list_schema, review_schema
-from backend.schemas.review_schemas.review_update_schema import review_update_schema
 
 
 class ReviewService:

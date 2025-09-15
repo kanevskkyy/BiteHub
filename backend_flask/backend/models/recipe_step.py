@@ -11,7 +11,7 @@ class RecipeStep(db.Model):
     step_number = db.Column(db.Integer, nullable=False)
     description = db.Column(db.Text, nullable=False)
 
-    recipe = db.relationship('Recipe', backref='steps', lazy=True)
+    recipe = db.relationship('Recipe')
 
     __table_args__ = (
         db.CheckConstraint('step_number >= 1', name='ck_recipe_steps_step_number_valid'),
