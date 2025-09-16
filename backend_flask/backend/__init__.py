@@ -1,7 +1,7 @@
-import json
-
-from flask import Flask
+from flask import Flask, jsonify
 from flask_injector import FlaskInjector
+from flask_jwt_extended import JWTManager
+
 import backend.models
 from backend.extensions import db, api
 from backend.helpers.cloudinary_uploader import CloudinaryUploader
@@ -20,18 +20,9 @@ class AppFactory:
 
         app.json_encoder = UUIDEncoder
 
-        @api.representation('application/json')
-        def output_json(data, code, headers=None):
-            resp = app.response_class(
-                json.dumps(data, cls=UUIDEncoder, ensure_ascii=False) + "\n",
-                mimetype='application/json',
-                headers=headers
-            )
-            resp.status_code = code
-            return resp
-
         CloudinaryUploader.init_cloudinary(app)
         APIRouter.register_namespaces(api)
         FlaskInjector(app=app, modules=[DIConfig.configure_repository, DIConfig.configure_services])
+        jwt = JWTManager(app)
 
         return app

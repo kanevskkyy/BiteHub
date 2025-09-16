@@ -1,3 +1,4 @@
+from flask_jwt_extended import jwt_required
 from flask_restx import Namespace, Resource
 from flask import request
 from injector import inject
@@ -17,6 +18,7 @@ class Review(Resource):
         super().__init__(**kwargs)
         self._review_service = review_service
 
+    @jwt_required
     def put(self, id):
         try:
             data = review_update_schema.load(request.get_json())
@@ -28,6 +30,7 @@ class Review(Resource):
         except ValueError as e:
             return {'error': str(e)}, 400
 
+    @jwt_required
     def delete(self, id):
         try:
             self._review_service.delete_review(id)
@@ -62,6 +65,7 @@ class ReviewListResource(Resource):
         super().__init__(**kwargs)
         self._service = service
 
+    @jwt_required
     def post(self):
         try:
             data = review_schema.load(request.get_json())

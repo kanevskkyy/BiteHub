@@ -1,6 +1,7 @@
 from json import loads
 
 from flask import request
+from flask_jwt_extended import jwt_required
 from marshmallow import ValidationError
 from flask_restx import Resource, Namespace
 from injector import inject
@@ -19,7 +20,7 @@ class RecipeList(Resource):
         self._recipe_service = recipe_service
 
     def get(self):
-        args = request.args.to_dict(flat=False)
+        args = request.args.to_dict(flat=True)
         for key in ['category_ids', 'ingredient_ids']:
             if key in args:
                 args[key] = args.get(key, [])
@@ -31,8 +32,7 @@ class RecipeList(Resource):
         recipes = self._recipe_service.get_recipes(filters)
         return recipes, 200
 
-    import json
-
+    @jwt_required
     def post(self):
         try:
             form_data = request.form.to_dict(flat=True)
@@ -70,6 +70,7 @@ class RecipeDetail(Resource):
             return {'error': str(err)}, 404
         return recipe, 200
 
+    @jwt_required
     def put(self, recipe_id):
         try:
             form_data = request.form.to_dict(flat=True)
@@ -93,6 +94,7 @@ class RecipeDetail(Resource):
 
         return recipe, 200
 
+    @jwt_required
     def delete(self, recipe_id):
         try:
             self._recipe_service.delete(recipe_id)

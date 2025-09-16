@@ -4,6 +4,7 @@ from flask_restx import Namespace, Resource
 from injector import inject
 from marshmallow import ValidationError
 
+from backend.decorators.role_required import role_required
 from backend.schemas.ingredient_schema import ingredient_schema
 from backend.service.ingredient_service import IngredientsService
 
@@ -21,6 +22,7 @@ class IngredientList(Resource):
         ingredients = self._ingredient_service.get_all()
         return ingredients, 200
 
+    @role_required(['Admin'])
     def post(self):
         data = request.form.to_dict()
         icon_file = request.files.get('iconFile')
@@ -48,6 +50,7 @@ class IngredientItem(Resource):
         except ValueError as e:
             return {'error': str(e)}, 404
 
+    @role_required(['Admin'])
     def put(self, id: UUID):
         data = request.form.to_dict()
         icon_file = request.files.get('icon File')
@@ -60,6 +63,7 @@ class IngredientItem(Resource):
         except ValueError as e:
             return {'error': str(e)}, 400
 
+    @role_required(['Admin'])
     def delete(self, id: UUID):
         try:
             self._ingredient_service.delete(id)

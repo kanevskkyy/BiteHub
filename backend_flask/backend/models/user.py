@@ -24,6 +24,9 @@ class User(db.Model):
     avatar_url = db.Column(URLType, nullable=False,
                            default='https://res.cloudinary.com/dkdljnfja/image/upload/v1757081419/Profile_Avatar_hsthfe.png')
 
+    role_id = db.Column(UUID(as_uuid=True), db.ForeignKey('roles.id'), nullable=False)
+    role = db.relationship('Role', backref='users', lazy=True)
+
     def set_password(self, password: str) -> None:
         self.password_hash = hashpw(password.encode('utf-8'), gensalt()).decode('utf-8')
 

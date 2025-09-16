@@ -5,6 +5,7 @@ from backend.repositories.category_repository import CategoryRepository
 from backend.repositories.ingredients_repository import IngredientsRepository
 from backend.repositories.recipe_repository import RecipeRepository
 from backend.repositories.review_repository import ReviewRepository
+from backend.repositories.role_repository import RoleRepository
 from backend.repositories.user_repository import UserRepository
 from backend.service.auth_service import AuthService
 from backend.service.category_service import CategoryService
@@ -23,6 +24,7 @@ class DIConfig:
         binder.bind(UserRepository, to=UserRepository, scope=singleton)
         binder.bind(ReviewRepository, to=ReviewRepository, scope=singleton)
         binder.bind(RecipeRepository, to=RecipeRepository, scope=singleton)
+        binder.bind(RoleRepository, to=RoleRepository, scope=singleton)
 
     @staticmethod
     def configure_services(binder: Binder):

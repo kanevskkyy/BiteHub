@@ -12,6 +12,13 @@ class Ingredients(db.Model):
     name = db.Column(db.String(100), nullable=False, unique=True)
     icon_url = db.Column(URLType, nullable=False)
 
+    recipe_ingredients = db.relationship(
+        'RecipeIngredient',
+        back_populates='ingredient',
+        cascade='all, delete-orphan',
+        passive_deletes=True
+    )
+
     __table_args__ = (
         db.CheckConstraint('length(trim(name)) > 0', name='ck_ingredients_name_required'),
     )

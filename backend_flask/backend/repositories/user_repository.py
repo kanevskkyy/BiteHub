@@ -1,5 +1,6 @@
 from uuid import UUID
-from backend import db
+
+from backend.extensions import db
 from backend.models import User
 from backend.repositories.base_repository import BaseRepository
 
@@ -16,3 +17,7 @@ class UserRepository(BaseRepository[User]):
             query = query.filter(self._model.id != exclude_id)
 
         return query.first() is not None
+
+
+    def get_user_by_username(self, username: str) -> User:
+        return self._session.query(self._model).filter_by(username=username).first()

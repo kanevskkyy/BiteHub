@@ -8,7 +8,6 @@ class ReviewSchema(Schema):
     rating = fields.Integer()
     comment = fields.String()
     created_at = fields.DateTime(dump_only=True, data_key='createdAt')
-    user_id = fields.UUID(load_only=True, required=True, data_key='userId')
     recipe_id = fields.UUID(load_only=True, required=True, data_key='recipeId')
     user = fields.Nested(UserDetailSchema, only=('id', 'username', 'avatar_url'), dump_only=True)
 

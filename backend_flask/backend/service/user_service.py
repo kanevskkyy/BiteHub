@@ -1,6 +1,7 @@
 from typing import Optional
 from uuid import UUID
 
+from flask_jwt_extended import get_jwt_identity
 from injector import inject
 from werkzeug.datastructures import FileStorage
 
@@ -22,9 +23,14 @@ class UserService:
         return user_detail_schema.dump(user)
 
     def update_user(self, user_id: UUID, data: dict, avatar_file: Optional[FileStorage] = None):
+        current_user_id = get_jwt_identity()
+
         user = self.__repository.get_by_id(user_id)
         if user is None:
             raise ValueError(f'Cannot find user with id: {user_id}')
+
+        if user.id != current_user_id:
+            raise ValueError(f'You don`t have permission to update this user')
 
         if self.__repository.is_username_exist(data['username'], exclude_id=user.id):
             raise ValueError('User with this username already exists!')
@@ -41,9 +47,14 @@ class UserService:
         return user_detail_schema.dump(user)
 
     def delete_user(self, user_id: UUID) -> bool:
+        current_user_id = get_jwt_identity()
         user = self.__repository.get_by_id(user_id)
+
         if user is None:
             raise ValueError(f'Cannot find user with id: {user_id}')
+
+        if user.id != current_user_id:
+            raise ValueError(f'You don`t have permission to delete this user')
 
         CloudinaryUploader.delete_file(user.avatar_url)
 

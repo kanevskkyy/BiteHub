@@ -4,7 +4,7 @@ from sqlalchemy import func
 from sqlalchemy.orm import joinedload
 
 from backend import db
-from backend.models import Recipe, Reviews, RecipeCategory, RecipeIngredient
+from backend.models import Recipe, Reviews, RecipeCategory, RecipeIngredient, RecipeStep
 from backend.pagination.paginated_result import PaginatedResult
 from backend.repositories.base_repository import BaseRepository
 
@@ -66,3 +66,47 @@ class RecipeRepository(BaseRepository[Recipe]):
             page=page,
             per_page=per_page
         )
+
+    def update_steps(self, recipe, new_steps_data: list[dict]):
+        existing_steps = {step.id: step for step in recipe.steps}
+        new_steps_ids = set()
+
+        with self._session.no_autoflush:
+            for step_data in new_steps_data:
+                step_id = step_data.get('id')
+                if step_id and step_id in existing_steps:
+                    step = existing_steps[step_id]
+                    step.step_number = step_data['step_number']
+                    step.description = step_data['description']
+                    new_steps_ids.add(step_id)
+                else:
+                    new_step = RecipeStep(
+                        step_number=step_data['step_number'],
+                        description=step_data['description'],
+                        recipe=recipe
+                    )
+                    recipe.steps.append(new_step)
+
+            for step in list(recipe.steps):
+                if step.id not in new_steps_ids and step.id in existing_steps:
+                    self._session.delete(step)
+
+    def update_ingredients(self, recipe, new_ingredient_ids: List[UUID]):
+        existing_ingredients = {ri.ingredient_id: ri for ri in recipe.recipe_ingredients}
+        new_ids_set = set(new_ingredient_ids)
+
+        for ing_id in new_ids_set - existing_ingredients.keys():
+            recipe.recipe_ingredients.append(RecipeIngredient(ingredient_id=ing_id, recipe=recipe))
+
+        for ing_id in existing_ingredients.keys() - new_ids_set:
+            db.session.delete(existing_ingredients[ing_id])
+
+    def update_categories(self, recipe, new_category_ids: List[UUID]):
+        existing_categories = {rc.category_id: rc for rc in recipe.recipe_categories}
+        new_ids_set = set(new_category_ids)
+
+        for cat_id in new_ids_set - existing_categories.keys():
+            recipe.recipe_categories.append(RecipeCategory(category_id=cat_id, recipe=recipe))
+
+        for cat_id in existing_categories.keys() - new_ids_set:
+            db.session.delete(existing_categories[cat_id])

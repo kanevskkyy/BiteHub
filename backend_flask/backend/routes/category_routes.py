@@ -3,6 +3,7 @@ from flask_restx import Namespace, Resource
 from injector import inject
 from marshmallow import ValidationError
 
+from backend.decorators.role_required import role_required
 from backend.schemas.category_schema import category_schema
 from backend.service import CategoryService
 
@@ -20,6 +21,7 @@ class CategoryList(Resource):
         categories = self._category_service.get_all()
         return categories, 200
 
+    @role_required(['Admin'])
     def post(self):
         data = request.form.to_dict()
         icon_file = request.files.get('iconFile')
@@ -45,6 +47,7 @@ class CategoryItem(Resource):
         except ValueError as e:
             return {'error': str(e)}, 404
 
+    @role_required(['Admin'])
     def put(self, id):
         data = request.form.to_dict()
         icon_file = request.files.get('iconFile')
@@ -57,6 +60,7 @@ class CategoryItem(Resource):
         except ValidationError as ve:
             return {'errors': ve.messages}, 400
 
+    @role_required(['Admin'])
     def delete(self, id):
         try:
             self._category_service.delete(id)

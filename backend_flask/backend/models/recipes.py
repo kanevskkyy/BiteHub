@@ -21,16 +21,19 @@ class Recipe(db.Model):
 
     steps = db.relationship(
         'RecipeStep',
+        back_populates='recipe',
         cascade='all, delete-orphan',
         passive_deletes=True
     )
     recipe_ingredients = db.relationship(
         'RecipeIngredient',
+        back_populates='recipe',
         cascade='all, delete-orphan',
         passive_deletes=True
     )
     recipe_categories = db.relationship(
         'RecipeCategory',
+        back_populates='recipe',
         cascade='all, delete-orphan',
         passive_deletes=True
     )
