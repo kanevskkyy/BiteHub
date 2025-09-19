@@ -6,6 +6,7 @@ from injector import inject
 from werkzeug.datastructures import FileStorage
 
 from backend import CloudinaryUploader
+from backend.exceptions import NotFound, PermissionDenied, AlreadyExists
 from backend.repositories.user_repository import UserRepository
 from backend.schemas.users_schema.user_detail_schema import user_detail_schema
 
@@ -18,7 +19,7 @@ class UserService:
     def get_by_id(self, user_id: UUID) -> dict:
         user = self.__repository.get_by_id(user_id)
         if user is None:
-            raise ValueError(f'Cannot find user with id: {user_id}')
+            raise NotFound(f'Cannot find user with id: {user_id}')
 
         return user_detail_schema.dump(user)
 
@@ -27,13 +28,13 @@ class UserService:
 
         user = self.__repository.get_by_id(user_id)
         if user is None:
-            raise ValueError(f'Cannot find user with id: {user_id}')
+            raise NotFound(f'Cannot find user with id: {user_id}')
 
         if user.id != current_user_id:
-            raise ValueError(f'You don`t have permission to update this user')
+            raise PermissionDenied(f'You don`t have permission to update this user')
 
         if self.__repository.is_username_exist(data['username'], exclude_id=user.id):
-            raise ValueError('User with this username already exists!')
+            raise AlreadyExists('User with this username already exists!')
 
         if avatar_file:
             if user.avatar_url:
@@ -51,10 +52,10 @@ class UserService:
         user = self.__repository.get_by_id(user_id)
 
         if user is None:
-            raise ValueError(f'Cannot find user with id: {user_id}')
+            raise NotFound(f'Cannot find user with id: {user_id}')
 
         if user.id != current_user_id:
-            raise ValueError(f'You don`t have permission to delete this user')
+            raise PermissionDenied(f'You don`t have permission to delete this user')
 
         CloudinaryUploader.delete_file(user.avatar_url)
 

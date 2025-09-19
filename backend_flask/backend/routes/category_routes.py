@@ -1,15 +1,16 @@
 from flask import request
 from flask_restx import Namespace, Resource
 from injector import inject
-from marshmallow import ValidationError
+from marshmallow import ValidationError as MarshmallowValidationError
 
 from backend.decorators.role_required import role_required
 from backend.decorators.valid_image import validate_image_file
 from backend.schemas.category_schema import category_schema
 from backend.service import CategoryService
-
+from backend.exceptions import NotFound, AlreadyExists, ValidationError as APIValidationError
 
 category_namespace = Namespace('Category', description='Category related operations')
+
 
 @category_namespace.route('/')
 class CategoryList(Resource):
@@ -31,8 +32,10 @@ class CategoryList(Resource):
             validated_data = category_schema.load(data)
             new_category = self._category_service.create(validated_data, icon_file)
             return new_category, 201
-        except ValidationError as e:
-            return {'error': e.messages}, 400
+        except (AlreadyExists, APIValidationError) as e:
+            return {'error': str(e)}, e.status_code
+        except MarshmallowValidationError as ve:
+            return {'errors': ve.messages}, 400
 
 
 @category_namespace.route('/<uuid:id>/')
@@ -46,8 +49,8 @@ class CategoryItem(Resource):
         try:
             category = self._category_service.get_by_id(id)
             return category, 200
-        except ValueError as e:
-            return {'error': str(e)}, 404
+        except NotFound as e:
+            return {'error': str(e)}, e.status_code
 
     @role_required(['Admin'])
     @validate_image_file('iconFile')
@@ -58,15 +61,15 @@ class CategoryItem(Resource):
             validated_data = category_schema.load(data)
             updated_category = self._category_service.update(id, validated_data, icon_file)
             return updated_category, 200
-        except ValueError as e:
-            return {'error': str(e)}, 400
-        except ValidationError as ve:
+        except (NotFound, AlreadyExists, APIValidationError) as e:
+            return {'error': str(e)}, e.status_code
+        except MarshmallowValidationError as ve:
             return {'errors': ve.messages}, 400
 
     @role_required(['Admin'])
     def delete(self, id):
         try:
             self._category_service.delete(id)
-            return 204
-        except ValueError as e:
-            return {'error': str(e)}, 404
+            return '', 204
+        except NotFound as e:
+            return {'error': str(e)}, e.status_code

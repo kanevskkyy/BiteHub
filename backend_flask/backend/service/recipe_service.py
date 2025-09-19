@@ -6,6 +6,7 @@ from injector import inject
 from werkzeug.datastructures import FileStorage
 
 from backend import CloudinaryUploader, db
+from backend.exceptions import NotFound, PermissionDenied
 from backend.models import Recipe, RecipeStep, RecipeIngredient, RecipeCategory
 from backend.repositories.recipe_repository import RecipeRepository
 from backend.schemas.recipes.recipe_detail_schema import recipe_detail_schema
@@ -50,7 +51,7 @@ class RecipeService:
     def get_recipe_by_id(self, recipe_id: UUID) -> Optional[Recipe]:
         recipe = self.__repository.get_by_id(recipe_id)
         if not recipe:
-            raise ValueError(f'Recipe not found with id: {recipe_id}')
+            raise NotFound(f'Recipe not found with id: {recipe_id}')
 
         return recipe_detail_schema.dump(recipe)
 
@@ -93,10 +94,10 @@ class RecipeService:
 
         recipe = self.__repository.get_by_id(recipe_id)
         if not recipe:
-            raise ValueError(f'Recipe not found with id: {recipe_id}')
+            raise NotFound(f'Recipe not found with id: {recipe_id}')
 
         if recipe.author_id != user_id:
-            raise ValueError(f'You don`\t have permission to edit this recipe')
+            raise PermissionDenied(f'You don`\t have permission to edit this recipe')
 
         recipe.title = data.get('title', recipe.title)
         recipe.description = data.get('description', recipe.description)
@@ -123,10 +124,10 @@ class RecipeService:
 
         recipe = self.__repository.get_by_id(recipe_id)
         if not recipe:
-            raise ValueError(f'Recipe not found with id: {recipe_id}')
+            raise NotFound(f'Recipe not found with id: {recipe_id}')
 
         if recipe.author_id != user_id and user_role != 'Admin':
-            raise ValueError(f'You don`t have permission to delete this recipe')
+            raise PermissionDenied(f'You don`t have permission to delete this recipe')
 
         if recipe.image_url:
             CloudinaryUploader.delete_file(recipe.image_url)

@@ -8,6 +8,7 @@ from backend import CloudinaryUploader
 from backend.models import User
 from backend.repositories.role_repository import RoleRepository
 from backend.repositories.user_repository import UserRepository
+from backend.exceptions import AlreadyExists, NotFound, ValidationError
 
 
 class AuthService:
@@ -20,7 +21,7 @@ class AuthService:
         data.pop('confirm_password', None)
 
         if self.__repository.is_username_exist(data['username']):
-            raise ValueError('User with this username already exists!')
+            raise AlreadyExists('User with this username already exists!')
 
         user = User(**data)
         user.set_password(data['password_hash'])
@@ -33,51 +34,31 @@ class AuthService:
         created_user = self.__repository.create(user)
 
         access_token = create_access_token(identity=created_user.id,
-                                           additional_claims={
-                                               'role': role.name
-                                           })
-        refresh_token = create_refresh_token(
-            identity=created_user.id,
-        )
+                                           additional_claims={'role': role.name})
+        refresh_token = create_refresh_token(identity=created_user.id)
 
-        return {
-            'accessToken': access_token,
-            'refreshToken': refresh_token,
-        }
-
+        return {'accessToken': access_token, 'refreshToken': refresh_token}
 
     def login_user(self, data: dict) -> dict:
         username = data['username']
         password = data['password']
 
         user = self.__repository.get_user_by_username(username)
-        if user is None:
-            raise ValueError('Invalid password or username!')
-
-        if not user.check_password(password):
-            raise ValueError('Invalid password or username!')
+        if not user or not user.check_password(password):
+            raise ValidationError('Invalid username or password!')
 
         access_token = create_access_token(identity=user.id,
-                                           additional_claims={
-                                               'role': user.role.name
-                                           })
-        refresh_token = create_refresh_token(
-            identity=user.id,
-        )
+                                           additional_claims={'role': user.role.name})
+        refresh_token = create_refresh_token(identity=user.id)
 
-        return {
-            'accessToken': access_token,
-            'refreshToken': refresh_token,
-        }
+        return {'accessToken': access_token, 'refreshToken': refresh_token}
 
     def refresh_access_token(self) -> str:
         current_user_id = get_jwt_identity()
         user = self.__repository.get_by_id(current_user_id)
         if not user:
-            raise ValueError('Cannot find user with this id')
+            raise NotFound('Cannot find user with this id')
 
         access_token = create_access_token(identity=user.id,
-                                           additional_claims={
-                                               'role': user.role.name
-                                           })
+                                           additional_claims={'role': user.role.name})
         return access_token

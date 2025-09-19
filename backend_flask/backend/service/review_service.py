@@ -3,6 +3,7 @@ from uuid import UUID
 from flask_jwt_extended import get_jwt_identity, get_jwt
 from injector import inject
 
+from backend.exceptions import AlreadyExists, NotFound, PermissionDenied
 from backend.models import Reviews
 from backend.repositories.review_repository import ReviewRepository
 from backend.repositories.role_repository import RoleRepository
@@ -26,11 +27,11 @@ class ReviewService:
         user_id = get_jwt_identity()
 
         if self.__repository.is_user_already_rated(user_id, data['recipe_id']):
-            raise ValueError('Review already writen by this user!')
+            raise AlreadyExists('Review already writen by this user!')
 
         pending_status_id = self.__repository.get_pending_status_id()
         if not pending_status_id:
-            raise ValueError('Pending status not found in DB!')
+            raise NotFound('Pending status not found in DB!')
 
         review = Reviews(**data)
         review.user_id = user_id
@@ -46,10 +47,10 @@ class ReviewService:
         review = self.__repository.get_by_id(review_id)
 
         if review.user_id != user_id:
-            raise ValueError('Review does not belong to this user!')
+            raise PermissionDenied('You do not have permission to update this review!')
 
         if review is None:
-            raise ValueError('Review does not exist!')
+            raise NotFound('Review does not exist!')
 
         for key, value in data.items():
             setattr(review, key, value)
@@ -63,11 +64,11 @@ class ReviewService:
         review = self.__repository.get_by_id(review_id)
 
         if review is None:
-            raise ValueError('Review does not exist!')
+            raise NotFound('Review does not exist!')
 
         approve_status_id = self.__repository.get_approve_status_id()
         if not approve_status_id:
-            raise ValueError('Approve status not found in DB!')
+            raise NotFound('Approve status not found in DB!')
 
         review.status_id = approve_status_id
         self.__repository.update(review)
@@ -89,10 +90,10 @@ class ReviewService:
         review = self.__repository.get_by_id(review_id)
 
         if review.user_id != user_id and user_role != 'Admin':
-            raise ValueError('You do not have permission to delete this review!')
+            raise PermissionDenied('You do not have permission to delete this review!')
 
         if review is None:
-            raise ValueError('Review does not exist!')
+            raise NotFound('Review does not exist!')
 
         self.__repository.delete(review)
 
