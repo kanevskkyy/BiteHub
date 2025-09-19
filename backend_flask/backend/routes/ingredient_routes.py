@@ -5,6 +5,7 @@ from injector import inject
 from marshmallow import ValidationError
 
 from backend.decorators.role_required import role_required
+from backend.decorators.valid_image import validate_image_file
 from backend.schemas.ingredient_schema import ingredient_schema
 from backend.service.ingredient_service import IngredientsService
 
@@ -23,6 +24,7 @@ class IngredientList(Resource):
         return ingredients, 200
 
     @role_required(['Admin'])
+    @validate_image_file('iconFile', required=True)
     def post(self):
         data = request.form.to_dict()
         icon_file = request.files.get('iconFile')
@@ -51,9 +53,10 @@ class IngredientItem(Resource):
             return {'error': str(e)}, 404
 
     @role_required(['Admin'])
+    @validate_image_file('iconFile')
     def put(self, id: UUID):
         data = request.form.to_dict()
-        icon_file = request.files.get('icon File')
+        icon_file = request.files.get('iconFile')
         try:
             validated_data = ingredient_schema.load(data)
             updated_ingredient = self._ingredient_service.update(id, validated_data, icon_file)

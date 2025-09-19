@@ -3,6 +3,7 @@ from flask_jwt_extended import jwt_required
 from flask_restx import Namespace, Resource
 from injector import inject
 
+from backend.decorators.valid_image import validate_image_file
 from backend.schemas.users_schema.user_update_schema import user_update_schema
 from marshmallow import ValidationError
 from backend.service.user_service import UserService
@@ -24,7 +25,8 @@ class UserDetail(Resource):
         except ValueError as e:
             return {'error': str(e)}, 404
 
-    @jwt_required
+    @jwt_required()
+    @validate_image_file('avatarFile')
     def put(self, user_id):
         data = request.form.to_dict()
         avatar_file = request.files.get('avatarFile')
@@ -37,7 +39,7 @@ class UserDetail(Resource):
         except ValueError as e:
             return {'error': str(e)}, 400
 
-    @jwt_required
+    @jwt_required()
     def delete(self, user_id):
         try:
             self._user_service.delete_user(user_id)

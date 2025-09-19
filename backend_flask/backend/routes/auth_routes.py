@@ -4,6 +4,7 @@ from flask_restx import Namespace, Resource
 from injector import inject
 from marshmallow import ValidationError
 
+from backend.decorators.valid_image import validate_image_file
 from backend.schemas.auth.login_schema import login_schema
 from backend.schemas.auth.user_create_schema import user_create_schema
 from backend.service.auth_service import AuthService
@@ -17,6 +18,7 @@ class RegisterResource(Resource):
         super().__init__(**kwargs)
         self._auth_service = auth_service
 
+    @validate_image_file('avatarFile', required=True)
     def post(self):
         try:
             data = user_create_schema.load(request.form)

@@ -4,6 +4,7 @@ from flask import request
 from injector import inject
 from marshmallow import ValidationError
 
+from backend.decorators.role_required import role_required
 from backend.pagination.pagination_schema import pagination_schema
 from backend.schemas.review_schemas.review_schema import review_schema
 from backend.schemas.review_schemas.review_update_schema import review_update_schema
@@ -18,7 +19,7 @@ class Review(Resource):
         super().__init__(**kwargs)
         self._review_service = review_service
 
-    @jwt_required
+    @jwt_required()
     def put(self, id):
         try:
             data = review_update_schema.load(request.get_json())
@@ -30,7 +31,7 @@ class Review(Resource):
         except ValueError as e:
             return {'error': str(e)}, 400
 
-    @jwt_required
+    @jwt_required()
     def delete(self, id):
         try:
             self._review_service.delete_review(id)
@@ -65,7 +66,7 @@ class ReviewListResource(Resource):
         super().__init__(**kwargs)
         self._service = service
 
-    @jwt_required
+    @jwt_required()
     def post(self):
         try:
             data = review_schema.load(request.get_json())
@@ -77,3 +78,46 @@ class ReviewListResource(Resource):
 
         except ValueError as err:
             return {'message': str(err)}, 400
+
+
+@review_namespace.route('/pending/')
+class PendingReviewsResource(Resource):
+    @inject
+    def __init__(self, service: ReviewService, **kwargs):
+        super().__init__(**kwargs)
+        self._service = service
+
+    @jwt_required()
+    @role_required(['Admin'])
+    def get(self):
+        try:
+            data = pagination_schema.load(request.args.to_dict())
+            page = data.get('page', 1)
+            per_page = data.get('per_page', 10)
+
+            reviews = self._service.get_pending_reviews(page, per_page)
+            return reviews, 200
+
+        except ValueError as err:
+            return {'error': str(err)}, 400
+        except ValidationError as ve:
+            return {'errors': ve.messages}, 400
+
+
+@review_namespace.route('/<uuid:id>/approve/')
+class ApproveReviewResource(Resource):
+    @inject
+    def __init__(self, service: ReviewService, **kwargs):
+        super().__init__(**kwargs)
+        self._service = service
+
+    @jwt_required()
+    @role_required(['Admin'])
+    def patch(self, id):
+        try:
+            self._service.approve_review(id)
+            return {
+                'message': 'Review approved successfully',
+            }, 200
+        except ValueError as err:
+            return {'error': str(err)}, 400

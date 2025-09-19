@@ -4,6 +4,7 @@ from injector import inject
 from marshmallow import ValidationError
 
 from backend.decorators.role_required import role_required
+from backend.decorators.valid_image import validate_image_file
 from backend.schemas.category_schema import category_schema
 from backend.service import CategoryService
 
@@ -22,6 +23,7 @@ class CategoryList(Resource):
         return categories, 200
 
     @role_required(['Admin'])
+    @validate_image_file('iconFile', required=True)
     def post(self):
         data = request.form.to_dict()
         icon_file = request.files.get('iconFile')
@@ -48,6 +50,7 @@ class CategoryItem(Resource):
             return {'error': str(e)}, 404
 
     @role_required(['Admin'])
+    @validate_image_file('iconFile')
     def put(self, id):
         data = request.form.to_dict()
         icon_file = request.files.get('iconFile')

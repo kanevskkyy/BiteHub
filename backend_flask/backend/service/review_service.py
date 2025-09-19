@@ -28,8 +28,13 @@ class ReviewService:
         if self.__repository.is_user_already_rated(user_id, data['recipe_id']):
             raise ValueError('Review already writen by this user!')
 
+        pending_status_id = self.__repository.get_pending_status_id()
+        if not pending_status_id:
+            raise ValueError('Pending status not found in DB!')
+
         review = Reviews(**data)
         review.user_id = user_id
+        review.status_id = pending_status_id
 
         created_review = self.__repository.create(review)
 
@@ -52,6 +57,29 @@ class ReviewService:
         self.__repository.update(review)
 
         return review_schema.dump(review)
+
+
+    def approve_review(self, review_id: UUID) -> None:
+        review = self.__repository.get_by_id(review_id)
+
+        if review is None:
+            raise ValueError('Review does not exist!')
+
+        approve_status_id = self.__repository.get_approve_status_id()
+        if not approve_status_id:
+            raise ValueError('Approve status not found in DB!')
+
+        review.status_id = approve_status_id
+        self.__repository.update(review)
+
+
+    def get_pending_reviews(self, page: int = 1, per_page: int = 10) -> dict:
+        paginated = self.__repository.get_pending_reviews(page, per_page)
+
+        serialized_items = review_list_schema.dump(paginated.items)
+
+        return paginated.to_dict() | {'items': serialized_items}
+
 
     def delete_review(self, review_id: UUID) -> bool:
         user_id = get_jwt_identity()

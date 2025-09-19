@@ -5,6 +5,8 @@ from flask_jwt_extended import jwt_required
 from marshmallow import ValidationError
 from flask_restx import Resource, Namespace
 from injector import inject
+
+from backend.decorators.valid_image import validate_image_file
 from backend.schemas.recipes.recipe_filter_schema import recipe_filter_schema
 from backend.schemas.recipes.recipe_create_schema import recipe_create_schema
 from backend.service.recipe_service import RecipeService
@@ -32,7 +34,8 @@ class RecipeList(Resource):
         recipes = self._recipe_service.get_recipes(filters)
         return recipes, 200
 
-    @jwt_required
+    @jwt_required()
+    @validate_image_file('photoUrl', required=True)
     def post(self):
         try:
             form_data = request.form.to_dict(flat=True)
@@ -70,7 +73,8 @@ class RecipeDetail(Resource):
             return {'error': str(err)}, 404
         return recipe, 200
 
-    @jwt_required
+    @jwt_required()
+    @validate_image_file('photoUrl')
     def put(self, recipe_id):
         try:
             form_data = request.form.to_dict(flat=True)
@@ -94,7 +98,7 @@ class RecipeDetail(Resource):
 
         return recipe, 200
 
-    @jwt_required
+    @jwt_required()
     def delete(self, recipe_id):
         try:
             self._recipe_service.delete(recipe_id)
