@@ -5,6 +5,7 @@ from flask_restx import Resource, Namespace
 from injector import inject
 from marshmallow import ValidationError as MarshmallowValidationError
 
+from backend.decorators.jwt_required_custom import jwt_required_custom
 from backend.decorators.role_required import role_required
 from backend.pagination.pagination_schema import pagination_schema
 from backend.schemas.review_schemas.review_schema import review_schema
@@ -22,7 +23,7 @@ class ReviewListResource(Resource):
         super().__init__(**kwargs)
         self._service = service
 
-    @jwt_required()
+    @jwt_required_custom()
     def post(self):
         try:
             data = review_schema.load(request.get_json())
@@ -41,7 +42,7 @@ class ReviewResource(Resource):
         super().__init__(**kwargs)
         self._service = service
 
-    @jwt_required()
+    @jwt_required_custom()
     def put(self, id: UUID):
         try:
             data = review_update_schema.load(request.get_json())
@@ -52,7 +53,7 @@ class ReviewResource(Resource):
         except (NotFound, PermissionDenied, APIValidationError) as e:
             return {'error': str(e)}, e.status_code
 
-    @jwt_required()
+    @jwt_required_custom()
     def delete(self, id: UUID):
         try:
             self._service.delete_review(id)
@@ -88,7 +89,7 @@ class PendingReviewsResource(Resource):
         super().__init__(**kwargs)
         self._service = service
 
-    @jwt_required()
+    @jwt_required_custom()
     @role_required(['Admin'])
     def get(self):
         try:
@@ -110,7 +111,7 @@ class ApproveReviewResource(Resource):
         super().__init__(**kwargs)
         self._service = service
 
-    @jwt_required()
+    @jwt_required_custom()
     @role_required(['Admin'])
     def patch(self, id: UUID):
         try:

@@ -1,18 +1,12 @@
 from injector import Binder, singleton
 
 from backend.extensions import db
-from backend.repositories.category_repository import CategoryRepository
-from backend.repositories.ingredients_repository import IngredientsRepository
-from backend.repositories.recipe_repository import RecipeRepository
-from backend.repositories.review_repository import ReviewRepository
-from backend.repositories.role_repository import RoleRepository
-from backend.repositories.user_repository import UserRepository
-from backend.service.auth_service import AuthService
-from backend.service.category_service import CategoryService
-from backend.service.ingredient_service import IngredientsService
-from backend.service.recipe_service import RecipeService
-from backend.service.review_service import ReviewService
-from backend.service.user_service import UserService
+from backend.repositories import (CategoryRepository, IngredientsRepository,
+                                  UserRepository, ReviewRepository,
+                                  RecipeRepository, RoleRepository)
+from backend.service import (CategoryService, IngredientsService,
+                             UserService, AuthService,
+                             ReviewService, RecipeService)
 
 
 class DIConfig:

@@ -1,11 +1,8 @@
 from flask_restx import Api
 
-from backend.routes.auth_routes import auth_namespace
-from backend.routes.ingredient_routes import ingredient_namespace
-from backend.routes.category_routes import category_namespace
-from backend.routes.recipe_routes import recipe_namespace
-from backend.routes.review_routes import review_namespace
-from backend.routes.user_routes import user_namespace
+from backend.routes import (ingredient_namespace, category_namespace,
+                            user_namespace, auth_namespace, review_namespace,
+                            recipe_namespace)
 
 
 class APIRouter:

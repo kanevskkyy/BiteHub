@@ -3,6 +3,7 @@ from flask_restx import Namespace, Resource
 from injector import inject
 from marshmallow import ValidationError as MarshmallowValidationError
 
+from backend.decorators.jwt_required_custom import jwt_required_custom
 from backend.decorators.role_required import role_required
 from backend.decorators.valid_image import validate_image_file
 from backend.schemas.category_schema import category_schema
@@ -23,6 +24,7 @@ class CategoryList(Resource):
         categories = self._category_service.get_all()
         return categories, 200
 
+    @jwt_required_custom()
     @role_required(['Admin'])
     @validate_image_file('iconFile', required=True)
     def post(self):
@@ -52,6 +54,7 @@ class CategoryItem(Resource):
         except NotFound as e:
             return {'error': str(e)}, e.status_code
 
+    @jwt_required_custom()
     @role_required(['Admin'])
     @validate_image_file('iconFile')
     def put(self, id):
@@ -66,6 +69,7 @@ class CategoryItem(Resource):
         except MarshmallowValidationError as ve:
             return {'errors': ve.messages}, 400
 
+    @jwt_required_custom()
     @role_required(['Admin'])
     def delete(self, id):
         try:

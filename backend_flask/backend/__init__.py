@@ -1,9 +1,8 @@
-from flask import Flask, jsonify
-from flask_injector import FlaskInjector
-from flask_jwt_extended import JWTManager
+from flask import Flask
 
+from flask_injector import FlaskInjector
 import backend.models
-from backend.extensions import db, api
+from backend.extensions import db, api, jwt
 from backend.helpers.cloudinary_uploader import CloudinaryUploader
 from backend.helpers.uuid_encoder import UUIDEncoder
 from backend.routes.api_router import APIRouter
@@ -23,6 +22,5 @@ class AppFactory:
         CloudinaryUploader.init_cloudinary(app)
         APIRouter.register_namespaces(api)
         FlaskInjector(app=app, modules=[DIConfig.configure_repository, DIConfig.configure_services])
-        jwt = JWTManager(app)
 
         return app
