@@ -5,19 +5,20 @@ from flask_jwt_extended import get_jwt_identity, get_jwt
 from injector import inject
 from werkzeug.datastructures import FileStorage
 
-from backend import CloudinaryUploader, db
+from backend import CloudinaryUploader
 from backend.exceptions import NotFound, PermissionDenied
 from backend.models import Recipe, RecipeStep, RecipeIngredient, RecipeCategory
-from backend.repositories.recipe_repository import RecipeRepository
+from backend.repositories import RecipeRepository, ReviewRepository
+from backend.schemas import recipe_list_schema
 from backend.schemas.recipes.recipe_detail_schema import recipe_detail_schema
-from backend.schemas.recipes.recipe_list_schema import recipe_list_schema
 from backend.schemas.recipes.recipes_stats import RecipeWithStats
 
 
 class RecipeService:
     @inject
-    def __init__(self, repository: RecipeRepository):
+    def __init__(self, repository: RecipeRepository, review_repo: ReviewRepository):
         self.__repository = repository
+        self.__review_repo = review_repo
 
 
     def get_recipes(self, filters: dict) -> dict:
@@ -26,13 +27,15 @@ class RecipeService:
         user_id = filters.get('user_id')
         category_ids = filters.get('category_ids', [])
         ingredient_ids = filters.get('ingredient_ids', [])
+        mode = filters.get('mode', 'or')
 
         paginated = self.__repository.get_recipes_paginated(
             page=page,
             per_page=per_page,
             user_id=user_id,
             category_ids=category_ids,
-            ingredient_ids=ingredient_ids
+            ingredient_ids=ingredient_ids,
+            mode = mode
         )
 
         recipes_with_stats = [
@@ -48,12 +51,26 @@ class RecipeService:
 
         return paginated.to_dict() | {'items': serialized_recipes}
 
-    def get_recipe_by_id(self, recipe_id: UUID) -> Optional[Recipe]:
+    def get_recipe_by_id(self, recipe_id: UUID) -> Optional[dict]:
         recipe = self.__repository.get_by_id(recipe_id)
         if not recipe:
             raise NotFound(f'Recipe not found with id: {recipe_id}')
 
-        return recipe_detail_schema.dump(recipe)
+        serialized = recipe_detail_schema.dump(recipe)
+
+        try:
+            user_id = UUID(get_jwt_identity())
+        except Exception:
+            user_id = None
+
+        if user_id:
+            serialized['isReviewed'] = self.__review_repo.has_any_review(user_id, recipe_id)
+            serialized['isApprovedReview'] = self.__review_repo.has_approved_review(user_id, recipe_id)
+        else:
+            serialized['isReviewed'] = False
+            serialized['isApprovedReview'] = False
+
+        return serialized
 
     def create(self, data: dict, image_file: Optional[FileStorage]):
         user_id = get_jwt_identity()

@@ -7,8 +7,8 @@ from werkzeug.datastructures import FileStorage
 from backend.exceptions import NotFound, AlreadyExists, ValidationError
 from backend.helpers.cloudinary_uploader import CloudinaryUploader
 from backend.models import Ingredients
-from backend.repositories.ingredients_repository import IngredientsRepository
-from backend.schemas.ingredient_schema import ingredients_schema, ingredient_schema
+from backend.repositories import IngredientsRepository
+from backend.schemas import ingredients_schema, ingredient_schema
 
 
 class IngredientsService:

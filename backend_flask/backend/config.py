@@ -20,3 +20,5 @@ class Config:
     )
 
     DEBUG = config('DEBUG', default=True, cast=bool)
+
+    CORS_ORIGINS = config('ALLOWED_ORIGIN', default='*')

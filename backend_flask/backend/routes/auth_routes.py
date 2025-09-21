@@ -1,13 +1,12 @@
 from flask import request
 from flask_restx import Namespace, Resource
 from injector import inject
+
 from marshmallow import ValidationError as MarshmallowValidationError
 
 from backend.decorators.jwt_required_custom import jwt_required_custom
 from backend.decorators.valid_image import validate_image_file
-from backend.schemas.auth.change_password import change_password_schema
-from backend.schemas.auth.login_schema import login_schema
-from backend.schemas.auth.user_create_schema import user_create_schema
+from backend.schemas import user_create_schema, login_schema, change_password_schema
 from backend.service.auth_service import AuthService
 from backend.exceptions import AlreadyExists, NotFound, ValidationError
 
@@ -91,3 +90,15 @@ class ChangePasswordResource(Resource):
             return {'error': str(e)}, e.status_code
         except NotFound as e:
             return {'error': str(e)}, e.status_code
+
+
+@auth_namespace.route('/check-username/<string:username>/')
+class CheckUsernameResource(Resource):
+    @inject
+    def __init__(self, auth_service: AuthService, **kwargs):
+        super().__init__(**kwargs)
+        self._auth_service = auth_service
+
+    def get(self, username):
+        result = self._auth_service.check_username_exist(username)
+        return result, 200

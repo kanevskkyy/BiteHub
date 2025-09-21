@@ -1,4 +1,5 @@
 from flask import Flask
+
 from backend import AppFactory
 from backend.config import Config
 from backend.extensions import db, migrate, api, jwt

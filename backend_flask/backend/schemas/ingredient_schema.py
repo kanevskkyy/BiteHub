@@ -1,7 +1,5 @@
 from flask_restx import ValidationError
-from marshmallow import Schema, fields, validates, post_load
-
-from backend.models import Ingredients
+from marshmallow import Schema, fields, validates
 
 
 class IngredientSchema(Schema):

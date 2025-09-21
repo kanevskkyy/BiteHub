@@ -1,6 +1,4 @@
-from marshmallow import Schema, fields, validates, ValidationError, post_load
-
-from backend.models import Category
+from marshmallow import Schema, fields, validates, ValidationError
 
 
 class CategorySchema(Schema):

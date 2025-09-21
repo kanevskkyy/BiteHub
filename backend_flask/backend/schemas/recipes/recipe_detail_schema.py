@@ -14,6 +14,8 @@ class RecipeDetailSchema(Schema):
     image_url = fields.Str(dump_only=True, data_key='imageUrl')
     servings_count = fields.Int(required=True, data_key='servingsCount')
     created_at = fields.DateTime(dump_only=True, data_key='createdAt')
+    is_reviewed = fields.Bool(dump_only=True, data_key='isReviewed')
+    is_approved_review = fields.Bool(dump_only=True, data_key='isApprovedReview')
 
     author = fields.Nested(UserDetailSchema, dump_only=True, only=('id', 'username', 'avatar_url'))
 

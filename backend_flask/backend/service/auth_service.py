@@ -6,9 +6,9 @@ from werkzeug.datastructures import FileStorage
 
 from backend import CloudinaryUploader
 from backend.models import User
-from backend.repositories.role_repository import RoleRepository
-from backend.repositories.user_repository import UserRepository
 from backend.exceptions import AlreadyExists, NotFound, ValidationError
+from backend.repositories import UserRepository, RoleRepository
+from backend.schemas.auth.token_schema import token_schema
 
 
 class AuthService:
@@ -16,6 +16,13 @@ class AuthService:
     def __init__(self, user_repository: UserRepository, role_repository: RoleRepository):
         self.__user_repository = user_repository
         self.__role_repository = role_repository
+
+    def check_username_exist(self, username) -> dict:
+        exist = self.__user_repository.is_username_exist(username)
+        return {
+            'exists': exist
+        }
+
 
     def register_user(self, data: dict, avatar_file: Optional[FileStorage] = None):
         data.pop('confirm_password', None)
@@ -41,7 +48,7 @@ class AuthService:
                                            additional_claims={'role': role.name})
         refresh_token = create_refresh_token(identity=created_user.id)
 
-        return {'accessToken': access_token, 'refreshToken': refresh_token}
+        return token_schema.dump({'accessToken': access_token, 'refreshToken': refresh_token})
 
     def login_user(self, data: dict) -> dict:
         username = data['username']
@@ -55,7 +62,7 @@ class AuthService:
                                            additional_claims={'role': user.role.name})
         refresh_token = create_refresh_token(identity=user.id)
 
-        return {'accessToken': access_token, 'refreshToken': refresh_token}
+        return token_schema.dump({'accessToken': access_token, 'refreshToken': refresh_token})
 
     def refresh_access_token(self) -> str:
         current_user_id = get_jwt_identity()

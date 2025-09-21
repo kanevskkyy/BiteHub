@@ -2,15 +2,13 @@ from json import loads
 from uuid import UUID
 
 from flask import request
-from flask_jwt_extended import jwt_required
 from flask_restx import Resource, Namespace
 from injector import inject
 from marshmallow import ValidationError as MarshmallowValidationError
 
 from backend.decorators.jwt_required_custom import jwt_required_custom
 from backend.decorators.valid_image import validate_image_file
-from backend.schemas.recipes.recipe_filter_schema import recipe_filter_schema
-from backend.schemas.recipes.recipe_create_schema import recipe_create_schema
+from backend.schemas import recipe_filter_schema, recipe_create_schema
 from backend.service.recipe_service import RecipeService
 from backend.exceptions import NotFound, PermissionDenied, ValidationError as APIValidationError
 
@@ -26,9 +24,10 @@ class RecipeList(Resource):
 
     def get(self):
         args = request.args.to_dict(flat=True)
-        for key in ['category_ids', 'ingredient_ids']:
-            if key in args:
-                args[key] = args.get(key, [])
+
+        for key in ['categoryIds', 'ingredientIds']:
+            if key in request.args:
+                args[key] = request.args.getlist(key)
 
         try:
             filters = recipe_filter_schema.load(args)
@@ -73,12 +72,13 @@ class RecipeDetail(Resource):
         super().__init__(**kwargs)
         self._recipe_service = recipe_service
 
+    @jwt_required_custom(optional=True)
     def get(self, recipe_id: UUID):
         try:
             recipe = self._recipe_service.get_recipe_by_id(recipe_id)
         except NotFound as e:
             return {'error': str(e)}, e.status_code
-        return recipe, 200
+        return recipe, 200,
 
     @jwt_required_custom()
     @validate_image_file('photoUrl')

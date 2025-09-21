@@ -1,6 +1,6 @@
 from uuid import UUID
+
 from flask import request
-from flask_jwt_extended import jwt_required
 from flask_restx import Resource, Namespace
 from injector import inject
 from marshmallow import ValidationError as MarshmallowValidationError
@@ -8,10 +8,10 @@ from marshmallow import ValidationError as MarshmallowValidationError
 from backend.decorators.jwt_required_custom import jwt_required_custom
 from backend.decorators.role_required import role_required
 from backend.pagination.pagination_schema import pagination_schema
-from backend.schemas.review_schemas.review_schema import review_schema
-from backend.schemas.review_schemas.review_update_schema import review_update_schema
+from backend.schemas import review_schema, review_update_schema
 from backend.service.review_service import ReviewService
-from backend.exceptions import NotFound, AlreadyExists, PermissionDenied, ValidationError as APIValidationError
+from backend.exceptions import (NotFound, AlreadyExists,
+                                PermissionDenied, ValidationError as APIValidationError)
 
 review_namespace = Namespace('Review', description='Review related options')
 

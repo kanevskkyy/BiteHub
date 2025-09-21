@@ -5,9 +5,8 @@ from injector import inject
 
 from backend.exceptions import AlreadyExists, NotFound, PermissionDenied
 from backend.models import Reviews
-from backend.repositories.review_repository import ReviewRepository
-from backend.repositories.role_repository import RoleRepository
-from backend.schemas.review_schemas.review_schema import review_list_schema, review_schema
+from backend.repositories import ReviewRepository, RoleRepository
+from backend.schemas import review_list_schema, review_schema
 
 
 class ReviewService:

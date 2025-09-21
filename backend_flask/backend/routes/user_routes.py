@@ -5,9 +5,11 @@ from marshmallow import ValidationError as MarshmallowValidationError
 
 from backend.decorators.jwt_required_custom import jwt_required_custom
 from backend.decorators.valid_image import validate_image_file
-from backend.schemas.users_schema.user_update_schema import user_update_schema
+from backend.schemas import user_update_schema
 from backend.service.user_service import UserService
-from backend.exceptions import NotFound, PermissionDenied, AlreadyExists, ValidationError as APIValidationError
+from backend.exceptions import (NotFound, PermissionDenied,
+                                AlreadyExists, ValidationError as APIValidationError)
+
 
 user_namespace = Namespace('User', description='User operations')
 

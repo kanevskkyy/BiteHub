@@ -7,7 +7,7 @@ from marshmallow import ValidationError as MarshmallowValidationError
 from backend.decorators.jwt_required_custom import jwt_required_custom
 from backend.decorators.role_required import role_required
 from backend.decorators.valid_image import validate_image_file
-from backend.schemas.ingredient_schema import ingredient_schema, ingredients_schema
+from backend.schemas import ingredient_schema
 from backend.service.ingredient_service import IngredientsService
 from backend.exceptions import NotFound, AlreadyExists, ValidationError as APIValidationError
 

@@ -7,8 +7,8 @@ from werkzeug.datastructures import FileStorage
 
 from backend import CloudinaryUploader
 from backend.exceptions import NotFound, PermissionDenied, AlreadyExists
-from backend.repositories.user_repository import UserRepository
-from backend.schemas.users_schema.user_detail_schema import user_detail_schema
+from backend.repositories import UserRepository
+from backend.schemas import user_detail_schema
 
 
 class UserService:

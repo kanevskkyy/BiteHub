@@ -26,7 +26,8 @@ class RecipeRepository(BaseRepository[Recipe]):
         per_page: int = 24,
         user_id: Optional[UUID] = None,
         category_ids: Optional[List[UUID]] = None,
-        ingredient_ids: Optional[List[UUID]] = None
+        ingredient_ids: Optional[List[UUID]] = None,
+        mode: str = 'or'
     ):
         query = (
             self._session.query(
@@ -53,6 +54,11 @@ class RecipeRepository(BaseRepository[Recipe]):
             query = query.join(RecipeIngredient).filter(
                 RecipeIngredient.ingredient_id.in_(ingredient_ids)
             )
+
+            if mode == 'and':
+                query = query.group_by(Recipe.id).having(
+                    func.count(func.distinct(RecipeIngredient.ingredient_id)) == len(ingredient_ids)
+                )
 
         query = query.group_by(Recipe.id).order_by(Recipe.created_at.desc())
 

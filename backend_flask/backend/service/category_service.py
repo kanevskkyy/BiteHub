@@ -1,5 +1,5 @@
-from typing import Optional
 from uuid import UUID
+from typing import Optional
 
 from injector import inject
 from werkzeug.datastructures import FileStorage
@@ -7,8 +7,8 @@ from werkzeug.datastructures import FileStorage
 from backend.exceptions import NotFound, AlreadyExists, ValidationError
 from backend.helpers.cloudinary_uploader import CloudinaryUploader
 from backend.models import Category
-from backend.repositories.category_repository import CategoryRepository
-from backend.schemas.category_schema import categories_schema, category_schema
+from backend.repositories import CategoryRepository
+from backend.schemas import categories_schema, category_schema
 
 
 class CategoryService:

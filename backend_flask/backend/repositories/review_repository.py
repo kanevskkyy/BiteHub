@@ -11,9 +11,39 @@ class ReviewRepository(BaseRepository[Reviews]):
 
     def is_user_already_rated(self, user_id: UUID, recipe_id: UUID) -> bool:
         return (
+                self._session.query(self._model)
+                .filter(
+                    self._model.user_id == user_id,
+                    self._model.recipe_id == recipe_id,
+                )
+                .first() is not None
+        )
+
+    def has_any_review(self, user_id: UUID, recipe_id: UUID) -> bool:
+        review = (
             self._session.query(self._model)
-            .filter(self._model.user_id == user_id, self._model.recipe_id == recipe_id)
-            .first() is not None
+            .filter(
+                self._model.user_id == user_id,
+                self._model.recipe_id == recipe_id,
+            )
+            .first()
+        )
+        print("DEBUG: Checking has_any_review")
+        print("User ID:", user_id, type(user_id))
+        print("Recipe ID:", recipe_id, type(recipe_id))
+        print("Found review:", review)
+        return review is not None
+
+    def has_approved_review(self, user_id: UUID, recipe_id: UUID) -> bool:
+        return (
+                self._session.query(self._model)
+                .join(ReviewStatus, ReviewStatus.id == self._model.status_id)
+                .filter(
+                    self._model.user_id == user_id,
+                    self._model.recipe_id == recipe_id,
+                    db.func.lower(ReviewStatus.name) == 'approved'
+                )
+                .first() is not None
         )
 
     def get_reviews_by_recipe(self, recipe_id: UUID, page: int = 1, per_page: int = 10) -> PaginatedResult:
