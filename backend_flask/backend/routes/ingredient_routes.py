@@ -2,14 +2,12 @@ from uuid import UUID
 from flask import request
 from flask_restx import Namespace, Resource
 from injector import inject
-from marshmallow import ValidationError as MarshmallowValidationError
 
 from backend.decorators.jwt_required_custom import jwt_required_custom
 from backend.decorators.role_required import role_required
 from backend.decorators.valid_image import validate_image_file
 from backend.schemas import ingredient_schema
 from backend.service.ingredient_service import IngredientsService
-from backend.exceptions import NotFound, AlreadyExists, ValidationError as APIValidationError
 
 ingredient_namespace = Namespace('Ingredient', description='Ingredient related operations')
 
@@ -31,14 +29,10 @@ class IngredientList(Resource):
     def post(self):
         data = request.form.to_dict()
         icon_file = request.files.get('iconFile')
-        try:
-            validated_data = ingredient_schema.load(data)
-            new_ingredient = self._ingredient_service.create(validated_data, icon_file)
-            return new_ingredient, 201
-        except (AlreadyExists, APIValidationError) as e:
-            return {'error': str(e)}, e.status_code
-        except MarshmallowValidationError as ve:
-            return {'errors': ve.messages}, 400
+
+        validated_data = ingredient_schema.load(data)
+        new_ingredient = self._ingredient_service.create(validated_data, icon_file)
+        return new_ingredient, 201
 
 
 @ingredient_namespace.route('/<uuid:id>/')
@@ -49,11 +43,8 @@ class IngredientItem(Resource):
         self._ingredient_service = ingredient_service
 
     def get(self, id: UUID):
-        try:
-            ingredient = self._ingredient_service.get_by_id(id)
-            return ingredient, 200
-        except NotFound as e:
-            return {'error': str(e)}, e.status_code
+        ingredient = self._ingredient_service.get_by_id(id)
+        return ingredient, 200
 
     @jwt_required_custom()
     @role_required(['Admin'])
@@ -61,20 +52,14 @@ class IngredientItem(Resource):
     def put(self, id: UUID):
         data = request.form.to_dict()
         icon_file = request.files.get('iconFile')
-        try:
-            validated_data = ingredient_schema.load(data)
-            updated_ingredient = self._ingredient_service.update(id, validated_data, icon_file)
-            return updated_ingredient, 200
-        except (NotFound, AlreadyExists, APIValidationError) as e:
-            return {'error': str(e)}, e.status_code
-        except MarshmallowValidationError as ve:
-            return {'errors': ve.messages}, 400
+
+        validated_data = ingredient_schema.load(data)
+        updated_ingredient = self._ingredient_service.update(id, validated_data, icon_file)
+        return updated_ingredient, 200
+
 
     @jwt_required_custom()
     @role_required(['Admin'])
     def delete(self, id: UUID):
-        try:
-            self._ingredient_service.delete(id)
-            return '', 204
-        except NotFound as e:
-            return {'error': str(e)}, e.status_code
+        self._ingredient_service.delete(id)
+        return 204
