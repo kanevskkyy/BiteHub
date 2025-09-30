@@ -6,6 +6,14 @@ from flask_sqlalchemy.session import Session
 T = TypeVar('T')
 
 class BaseRepository(ABC, Generic[T]):
+    """
+    Generic repository providing basic CRUD operations for SQLAlchemy models.
+
+    Args:
+        session (Session): SQLAlchemy session.
+        model (Type[T]): SQLAlchemy model class.
+    """
+
     def __init__(self, session: Session, model: Type[T]) -> None:
         self._session = session
         self._model = model

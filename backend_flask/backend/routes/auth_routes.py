@@ -1,8 +1,10 @@
 from flask import request
 from flask_restx import Namespace, Resource
 from injector import inject
+
 from backend.decorators.jwt_required_custom import jwt_required_custom
 from backend.decorators.valid_image import validate_image_file
+from backend.extensions import limiter
 from backend.schemas import user_create_schema, login_schema, change_password_schema
 from backend.service.auth_service import AuthService
 
@@ -17,6 +19,7 @@ class RegisterResource(Resource):
         self._auth_service = auth_service
 
     @validate_image_file('avatarFile')
+    @limiter.limit('3 per hour')
     def post(self):
         data = user_create_schema.load(request.form)
         avatar_file = request.files.get('avatarFile')
@@ -31,6 +34,7 @@ class LoginResource(Resource):
         super().__init__(**kwargs)
         self._auth_service = auth_service
 
+    @limiter.limit('10 per minute')
     def post(self):
         data = login_schema.load(request.get_json())
         result = self._auth_service.login_user(data)
@@ -57,6 +61,7 @@ class ChangePasswordResource(Resource):
         super().__init__(**kwargs)
         self._auth_service = auth_service
 
+    @limiter.limit('1 per day')
     @jwt_required_custom()
     def post(self):
         data = change_password_schema.load(request.get_json())
@@ -71,6 +76,7 @@ class CheckUsernameResource(Resource):
         super().__init__(**kwargs)
         self._auth_service = auth_service
 
+    @limiter.limit('20 per minute')
     def get(self, username):
         result = self._auth_service.check_username_exist(username)
         return result, 200

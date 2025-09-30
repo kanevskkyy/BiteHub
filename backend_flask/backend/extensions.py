@@ -1,4 +1,6 @@
-from flask_jwt_extended import JWTManager
+from flask_jwt_extended import JWTManager, get_jwt_identity
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from flask_migrate import Migrate
 from flask_restx import Api
 from flask_sqlalchemy import SQLAlchemy
@@ -12,3 +14,6 @@ api = Api(
     doc='/docs/',
 )
 jwt = JWTManager()
+limiter = Limiter(
+    key_func=lambda: get_jwt_identity() or get_remote_address()
+)

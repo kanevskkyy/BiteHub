@@ -10,19 +10,42 @@ from backend.schemas import review_list_schema, review_schema
 
 
 class ReviewService:
+    """
+    Service for managing recipe reviews, including CRUD operations,
+    approving reviews, and pagination.
+
+    Methods:
+        get_reviews_by_recipe(recipe_id: UUID, page: int, per_page: int) -> dict:
+            Get paginated reviews for a recipe.
+
+        create_review(data: dict) -> dict:
+            Create a new review by the current user. Sets status to pending.
+
+        update_review(review_id: UUID, data: dict) -> dict:
+            Update an existing review. Only the author can update.
+
+        approve_review(review_id: UUID) -> None:
+            Approve a review. Changes its status to approved.
+
+        get_pending_reviews(page: int, per_page: int) -> dict:
+            Get paginated list of pending reviews.
+
+        delete_review(review_id: UUID) -> bool:
+            Delete a review. Only the author or Admin can delete.
+    """
     @inject
     def __init__(self, repository: ReviewRepository, role_repository: RoleRepository):
         self.__repository = repository
         self.__role_repository = role_repository
 
-    def get_reviews_by_recipe(self, recipe_id: UUID, page: int = 1, per_page: int = 10):
+    def get_reviews_by_recipe(self, recipe_id: UUID, page: int = 1, per_page: int = 10) -> dict:
         paginated = self.__repository.get_reviews_by_recipe(recipe_id, page, per_page)
 
         serialized_items = review_list_schema.dump(paginated.items)
 
         return paginated.to_dict() | {'items': serialized_items}
 
-    def create_review(self, data: dict):
+    def create_review(self, data: dict) -> dict:
         user_id = get_jwt_identity()
 
         if self.__repository.is_user_already_rated(user_id, data['recipe_id']):

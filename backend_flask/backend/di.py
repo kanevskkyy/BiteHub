@@ -1,5 +1,6 @@
 from injector import Binder, singleton
 
+from backend import CloudinaryUploader
 from backend.extensions import db
 from backend.repositories import (CategoryRepository, IngredientsRepository,
                                   UserRepository, ReviewRepository,
@@ -10,6 +11,9 @@ from backend.service import (CategoryService, IngredientsService,
 
 
 class DIConfig:
+    """
+    Config dependency injection
+    """
     @staticmethod
     def configure_repository(binder: Binder):
         binder.bind(db.session.__class__, to=db.session, scope=singleton)
@@ -19,6 +23,12 @@ class DIConfig:
         binder.bind(ReviewRepository, to=ReviewRepository, scope=singleton)
         binder.bind(RecipeRepository, to=RecipeRepository, scope=singleton)
         binder.bind(RoleRepository, to=RoleRepository, scope=singleton)
+
+
+    @staticmethod
+    def configure_image_service(binder: Binder):
+        binder.bind(CloudinaryUploader, to=CloudinaryUploader(), scope=singleton)
+
 
     @staticmethod
     def configure_services(binder: Binder):

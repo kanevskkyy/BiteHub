@@ -10,14 +10,14 @@ class RecipeFilterSchema(Schema):
     mode = fields.String(load_default='or')
 
     @validates('page')
-    def validate_page(self, page: int, **kwargs):
+    def validate_page(self, page: int, **kwargs) -> int:
         if page < 1:
             raise ValidationError('Page must be greater than 0')
 
         return page
 
     @validates('per_page')
-    def validate_per_page(self, per_page: int, **kwargs):
+    def validate_per_page(self, per_page: int, **kwargs) -> int:
         if per_page < 1:
             raise ValidationError('Page must be greater than 0')
         if per_page > 100:
@@ -26,9 +26,10 @@ class RecipeFilterSchema(Schema):
         return per_page
 
     @validates('mode')
-    def validate_mode(self, mode: str, **kwargs):
+    def validate_mode(self, mode: str, **kwargs) -> str:
         if mode not in ('and', 'or'):
             raise ValidationError('Mode must be "and" or "or"')
+
         return mode
 
 

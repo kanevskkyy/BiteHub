@@ -1,6 +1,7 @@
 from flask import request
 from flask_restx import Namespace, Resource
 from injector import inject
+
 from backend.decorators.jwt_required_custom import jwt_required_custom
 from backend.decorators.role_required import role_required
 from backend.decorators.valid_image import validate_image_file
@@ -53,7 +54,6 @@ class CategoryItem(Resource):
         validated_data = category_schema.load(data)
         updated_category = self._category_service.update(id, validated_data, icon_file)
         return updated_category, 200
-
 
     @jwt_required_custom()
     @role_required(['Admin'])

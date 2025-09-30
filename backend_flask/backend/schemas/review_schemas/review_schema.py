@@ -11,15 +11,18 @@ class ReviewSchema(Schema):
     user = fields.Nested(UserDetailSchema, only=('id', 'username', 'avatar_url'), dump_only=True)
 
     @validates('rating')
-    def validate_rating(self, value: int, **kwargs):
+    def validate_rating(self, value: int, **kwargs) -> int:
         if value < 1 or value > 5:
             raise ValidationError('Rating must be between 1 and 5')
 
+        return value
 
     @validates('comment')
-    def validate_comment(self, value: str, **kwargs):
+    def validate_comment(self, value: str, **kwargs) -> str:
         if not value.strip():
             raise ValidationError('Comment cannot be empty')
+
+        return value
 
 
 

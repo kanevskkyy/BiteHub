@@ -12,10 +12,22 @@ from backend.schemas.auth.token_schema import token_schema
 
 
 class AuthService:
+    """
+    Service for handling authentication and user-related operations.
+
+    Methods:
+        check_username_exist(username): Check if a username already exists.
+        register_user(data, avatar_file): Register a new user.
+        login_user(data): Authenticate a user and return JWT tokens.
+        refresh_access_token(): Refresh JWT access token.
+        change_password(data): Change current user's password.
+     """
+
     @inject
-    def __init__(self, user_repository: UserRepository, role_repository: RoleRepository):
+    def __init__(self, user_repository: UserRepository, role_repository: RoleRepository, cloud_uploader: CloudinaryUploader):
         self.__user_repository = user_repository
         self.__role_repository = role_repository
+        self.__cloud_uploader = cloud_uploader
 
     def check_username_exist(self, username) -> dict:
         exist = self.__user_repository.is_username_exist(username)
@@ -24,7 +36,7 @@ class AuthService:
         }
 
 
-    def register_user(self, data: dict, avatar_file: Optional[FileStorage] = None):
+    def register_user(self, data: dict, avatar_file: Optional[FileStorage] = None) -> dict:
         data.pop('confirm_password', None)
 
         if self.__user_repository.is_username_exist(data['username']):
@@ -40,15 +52,26 @@ class AuthService:
         user.role_id = role.id
 
         if avatar_file:
-            user.avatar_url = CloudinaryUploader.upload_file(avatar_file, folder='users')
+            user.avatar_url = self.__cloud_uploader.upload_file(avatar_file, folder='users')
 
         created_user = self.__user_repository.create(user)
 
-        access_token = create_access_token(identity=created_user.id,
-                                           additional_claims={'role': role.name})
-        refresh_token = create_refresh_token(identity=created_user.id)
+        access_token = create_access_token(
+            identity=created_user.id,
+            additional_claims={
+                'role': role.name
+            }
+        )
+        refresh_token = create_refresh_token(
+            identity=created_user.id
+        )
 
-        return token_schema.dump({'accessToken': access_token, 'refreshToken': refresh_token})
+        return token_schema.dump(
+            {
+                'accessToken': access_token,
+                'refreshToken': refresh_token
+             }
+        )
 
     def login_user(self, data: dict) -> dict:
         username = data['username']
@@ -58,8 +81,12 @@ class AuthService:
         if not user or not user.check_password(password):
             raise ValidationError('Invalid username or password!')
 
-        access_token = create_access_token(identity=user.id,
-                                           additional_claims={'role': user.role.name})
+        access_token = create_access_token(
+            identity=user.id,
+            additional_claims={
+                'role': user.role.name
+            }
+        )
         refresh_token = create_refresh_token(identity=user.id)
 
         return token_schema.dump({'accessToken': access_token, 'refreshToken': refresh_token})
@@ -70,8 +97,12 @@ class AuthService:
         if not user:
             raise NotFound('Cannot find user with this id')
 
-        access_token = create_access_token(identity=user.id,
-                                           additional_claims={'role': user.role.name})
+        access_token = create_access_token(
+            identity=user.id,
+            additional_claims={
+                'role': user.role.name
+            }
+        )
         return access_token
 
     def change_password(self, data: dict) -> bool:

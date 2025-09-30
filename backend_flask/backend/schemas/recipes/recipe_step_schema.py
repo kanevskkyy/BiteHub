@@ -7,12 +7,14 @@ class RecipeStepSchema(Schema):
     description = fields.Str(required=True)
 
     @validates('step_number')
-    def validate_step_number(self, step_number: int, **kwargs):
+    def validate_step_number(self, step_number: int, **kwargs) -> int:
         if step_number < 1:
             raise ValidationError('step_number must be greater than 0')
 
+        return step_number
+
     @validates('description')
-    def validate_description(self, description: str, **kwargs):
+    def validate_description(self, description: str, **kwargs) -> str:
         if description.strip() == '':
             raise ValidationError('description cannot be empty')
 

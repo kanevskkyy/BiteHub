@@ -7,19 +7,25 @@ class ChangePasswordSchema(Schema):
     confirm_password = fields.String(required=True, data_key='confirmPassword')
 
     @validates('old_password')
-    def validate_old_password(self, value: str, **kwargs):
+    def validate_old_password(self, value: str, **kwargs) -> str:
         if value.strip() == '' or len(value.strip()) == 0:
             raise ValidationError('Old password cannot be empty')
 
+        return value
+
     @validates('new_password')
-    def validate_new_password(self, value: str, **kwargs):
+    def validate_new_password(self, value: str, **kwargs) -> str:
         if value.strip() == '' or len(value.strip()) == 0:
             raise ValidationError('New password cannot be empty')
 
+        return value
+
     @validates('confirm_password')
-    def validate_confirm_password(self, value: str, **kwargs):
+    def validate_confirm_password(self, value: str, **kwargs) -> str:
         if value.strip() == '' or len(value.strip()) == 0:
             raise ValidationError('Confirm password cannot be empty')
+
+        return value
 
 
     @validates_schema

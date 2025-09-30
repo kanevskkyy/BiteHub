@@ -12,9 +12,24 @@ from backend.schemas import user_detail_schema
 
 
 class UserService:
+    """
+    Service for managing users, including retrieval, updating, and deletion.
+
+    Methods:
+        get_by_id(user_id: UUID) -> dict:
+            Get user details by ID.
+
+        update_user(user_id: UUID, data: dict, avatar_file: Optional[FileStorage] = None) -> dict:
+            Update user information and avatar.
+            Only the current user can update their data.
+
+        delete_user(user_id: UUID) -> bool:
+            Delete a user. Only the current user can delete themselves.
+    """
     @inject
-    def __init__(self, repository: UserRepository):
+    def __init__(self, repository: UserRepository, cloud_uploader: CloudinaryUploader):
         self.__repository = repository
+        self.__cloud_uploader = cloud_uploader
 
     def get_by_id(self, user_id: UUID) -> dict:
         user = self.__repository.get_by_id(user_id)
@@ -23,7 +38,7 @@ class UserService:
 
         return user_detail_schema.dump(user)
 
-    def update_user(self, user_id: UUID, data: dict, avatar_file: Optional[FileStorage] = None):
+    def update_user(self, user_id: UUID, data: dict, avatar_file: Optional[FileStorage] = None) -> dict:
         current_user_id = get_jwt_identity()
 
         user = self.__repository.get_by_id(user_id)
@@ -38,8 +53,8 @@ class UserService:
 
         if avatar_file:
             if user.avatar_url:
-                CloudinaryUploader.delete_file(user.avatar_url)
-            user.avatar_url = CloudinaryUploader.upload_file(avatar_file, folder='users')
+                self.__cloud_uploader.delete_file(user.avatar_url)
+            user.avatar_url = self.__cloud_uploader.upload_file(avatar_file, folder='users')
 
         for key, value in data.items():
             setattr(user, key, value)
@@ -57,6 +72,6 @@ class UserService:
         if user.id != current_user_id:
             raise PermissionDenied(f'You don`t have permission to delete this user')
 
-        CloudinaryUploader.delete_file(user.avatar_url)
+        self.__cloud_uploader.delete_file(user.avatar_url)
 
         return True

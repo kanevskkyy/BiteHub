@@ -1,10 +1,18 @@
+from flask_restx import Api
 from marshmallow import ValidationError
 from backend.exceptions import APIException
 
 
 class ErrorHandlerConfigurator:
+    """
+    Configuring middleware to intercept errors
+    """
+
     @staticmethod
-    def init(api):
+    def init(api: Api):
+        """
+        Attach error handlers to the Flask-RESTX API.
+        """
         @api.errorhandler(APIException)
         def handle_api_exception(error: APIException):
             return {

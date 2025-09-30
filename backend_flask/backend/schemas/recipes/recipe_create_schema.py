@@ -38,6 +38,7 @@ class RecipeCreateSchema(Schema):
     def validate_servings_count(self, servings_count: int, **kwargs) -> int:
         if servings_count <= 0:
             raise ValidationError('Servings count cannot be negative or zero')
+
         return servings_count
 
 

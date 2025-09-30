@@ -21,14 +21,14 @@ class RecipeRepository(BaseRepository[Recipe]):
         )
 
     def get_recipes_paginated(
-        self,
-        page: int = 1,
-        per_page: int = 24,
-        user_id: Optional[UUID] = None,
-        category_ids: Optional[List[UUID]] = None,
-        ingredient_ids: Optional[List[UUID]] = None,
-        mode: str = 'or'
-    ):
+            self,
+            page: int = 1,
+            per_page: int = 24,
+            user_id: Optional[UUID] = None,
+            category_ids: Optional[List[UUID]] = None,
+            ingredient_ids: Optional[List[UUID]] = None,
+            mode: str = 'or'
+    ) -> PaginatedResult:
         query = (
             self._session.query(
                 Recipe,
@@ -73,7 +73,7 @@ class RecipeRepository(BaseRepository[Recipe]):
             per_page=per_page
         )
 
-    def update_steps(self, recipe, new_steps_data: list[dict]):
+    def update_steps(self, recipe, new_steps_data: list[dict]) -> None:
         existing_steps = {step.id: step for step in recipe.steps}
         new_steps_ids = set()
 
@@ -97,7 +97,7 @@ class RecipeRepository(BaseRepository[Recipe]):
                 if step.id not in new_steps_ids and step.id in existing_steps:
                     self._session.delete(step)
 
-    def update_ingredients(self, recipe, new_ingredient_ids: List[UUID]):
+    def update_ingredients(self, recipe, new_ingredient_ids: List[UUID]) -> None:
         existing_ingredients = {ri.ingredient_id: ri for ri in recipe.recipe_ingredients}
         new_ids_set = set(new_ingredient_ids)
 
@@ -107,7 +107,7 @@ class RecipeRepository(BaseRepository[Recipe]):
         for ing_id in existing_ingredients.keys() - new_ids_set:
             db.session.delete(existing_ingredients[ing_id])
 
-    def update_categories(self, recipe, new_category_ids: List[UUID]):
+    def update_categories(self, recipe, new_category_ids: List[UUID]) -> None:
         existing_categories = {rc.category_id: rc for rc in recipe.recipe_categories}
         new_ids_set = set(new_category_ids)
 

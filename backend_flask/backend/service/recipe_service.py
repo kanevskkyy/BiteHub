@@ -15,10 +15,33 @@ from backend.schemas.recipes.recipes_stats import RecipeWithStats
 
 
 class RecipeService:
+    """
+    Service for managing recipes, including CRUD operations, handling
+    image uploads via Cloudinary, and providing user-specific flags
+    like isReviewed or isApprovedReview.
+
+    Methods:
+        get_recipes(filters: dict) -> dict:
+            Get paginated recipes with optional filters (user, categories, ingredients).
+
+        get_recipe_by_id(recipe_id: UUID) -> dict:
+            Get detailed info for a single recipe, including review flags for the current user.
+
+        create(data: dict, image_file: Optional[FileStorage]):
+            Create a new recipe with steps, ingredients, categories, and an optional image.
+
+        update(recipe_id: UUID, data: dict, image_file: Optional[FileStorage]):
+            Update a recipe, including steps, ingredients, categories, and optionally its image.
+            Only the author can update their recipe.
+
+        delete(recipe_id: UUID) -> bool:
+            Delete a recipe. Only the author or Admin can delete.
+    """
     @inject
-    def __init__(self, repository: RecipeRepository, review_repo: ReviewRepository):
+    def __init__(self, repository: RecipeRepository, review_repo: ReviewRepository, cloud_uploader: CloudinaryUploader):
         self.__repository = repository
         self.__review_repo = review_repo
+        self.__cloud_uploader = cloud_uploader
 
 
     def get_recipes(self, filters: dict) -> dict:
@@ -72,9 +95,9 @@ class RecipeService:
 
         return serialized
 
-    def create(self, data: dict, image_file: Optional[FileStorage]):
+    def create(self, data: dict, image_file: Optional[FileStorage]) -> dict:
         user_id = get_jwt_identity()
-        image_url = CloudinaryUploader.upload_file(image_file, folder='recipes')
+        image_url = self.__cloud_uploader.upload_file(image_file, folder='recipes')
 
         recipe = Recipe(
             title=data['title'],
@@ -106,7 +129,7 @@ class RecipeService:
         created_recipe = self.__repository.create(recipe)
         return recipe_detail_schema.dump(created_recipe)
 
-    def update(self, recipe_id: UUID, data: dict, image_file: Optional[FileStorage] = None):
+    def update(self, recipe_id: UUID, data: dict, image_file: Optional[FileStorage] = None) -> dict:
         user_id = get_jwt_identity()
 
         recipe = self.__repository.get_by_id(recipe_id)
@@ -123,8 +146,8 @@ class RecipeService:
 
         if image_file:
             if recipe.image_url:
-                CloudinaryUploader.delete_file(recipe.image_url)
-            recipe.image_url = CloudinaryUploader.upload_file(image_file, folder='recipes')
+                self.__cloud_uploader.delete_file(recipe.image_url)
+            recipe.image_url = self.__cloud_uploader.upload_file(image_file, folder='recipes')
 
         self.__repository.update_steps(recipe, data.get('steps', []))
         self.__repository.update_ingredients(recipe, data.get('ingredients_ids', []))
@@ -147,7 +170,7 @@ class RecipeService:
             raise PermissionDenied(f'You don`t have permission to delete this recipe')
 
         if recipe.image_url:
-            CloudinaryUploader.delete_file(recipe.image_url)
+            self.__cloud_uploader.delete_file(recipe.image_url)
 
         self.__repository.delete(recipe)
 

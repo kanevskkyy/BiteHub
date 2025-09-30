@@ -1,4 +1,5 @@
 from functools import wraps
+
 from flask_jwt_extended import verify_jwt_in_request
 from flask_jwt_extended.exceptions import (
     NoAuthorizationError,
@@ -11,7 +12,23 @@ from flask_jwt_extended.exceptions import (
 )
 from jwt import ExpiredSignatureError, InvalidTokenError, DecodeError
 
-def jwt_required_custom(optional=False, fresh=False, refresh=False, locations=None, verify_type=True):
+def jwt_required_custom(optional=False,
+                        fresh=False,
+                        refresh=False, locations=None,
+                        verify_type=True):
+    """
+    Custom JWT required decorator with detailed exception handling.
+
+    Args:
+        optional (bool): If True, JWT is optional.
+        fresh (bool): If True, requires a fresh token.
+        refresh (bool): If True, requires a refresh token.
+        locations (list): Locations to check for JWT.
+        verify_type (bool): If True, verifies token type.
+
+    Returns:
+        function: Decorated function with JWT checks.
+    """
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
