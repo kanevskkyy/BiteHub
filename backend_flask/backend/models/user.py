@@ -1,7 +1,7 @@
 from uuid import uuid4
 from sqlalchemy.dialects.postgresql import UUID
 from bcrypt import hashpw, gensalt, checkpw
-from sqlalchemy_utils import EmailType, URLType
+from sqlalchemy_utils import URLType
 
 from backend.extensions import db
 
@@ -22,7 +22,7 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, default=db.func.now())
 
     avatar_url = db.Column(URLType, nullable=False,
-                           default='https://res.cloudinary.com/dkdljnfja/image/upload/v1757081419/Profile_Avatar_hsthfe.png')
+                           default='https://res.cloudinary.com/dkdljnfja/image/upload/v1759502757/Profile_Avatar_phwxy8.png')
 
     role_id = db.Column(UUID(as_uuid=True), db.ForeignKey('roles.id'), nullable=False)
     role = db.relationship('Role', backref='users', lazy=True)

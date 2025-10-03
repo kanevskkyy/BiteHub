@@ -6,8 +6,8 @@ from werkzeug.datastructures import FileStorage
 
 from backend.exceptions import NotFound, AlreadyExists, ValidationError
 from backend.helpers.cloudinary_uploader import CloudinaryUploader
-from backend.models import Ingredients
-from backend.repositories import IngredientsRepository
+from backend.models import Ingredient
+from backend.repositories import IngredientRepository
 from backend.schemas import ingredients_schema, ingredient_schema
 
 
@@ -25,7 +25,7 @@ class IngredientsService:
     """
 
     @inject
-    def __init__(self, repository: IngredientsRepository, cloud_uploader: CloudinaryUploader):
+    def __init__(self, repository: IngredientRepository, cloud_uploader: CloudinaryUploader):
         self.__repository = repository
         self.__cloud_uploader = cloud_uploader
 
@@ -46,7 +46,7 @@ class IngredientsService:
         if not icon_file:
             raise ValidationError('Ingredient needs to have an image!')
 
-        ingredient = Ingredients(**data)
+        ingredient = Ingredient(**data)
         ingredient.icon_url = self.__cloud_uploader.upload_file(icon_file, folder='ingredients')
 
         created_ingredient = self.__repository.create(ingredient)

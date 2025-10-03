@@ -7,6 +7,7 @@ from werkzeug.datastructures import FileStorage
 
 from backend import CloudinaryUploader
 from backend.exceptions import NotFound, PermissionDenied, AlreadyExists
+from backend.models import User
 from backend.repositories import UserRepository
 from backend.schemas import user_detail_schema
 
@@ -51,10 +52,9 @@ class UserService:
         if self.__repository.is_username_exist(data['username'], exclude_id=user.id):
             raise AlreadyExists('User with this username already exists!')
 
-        if avatar_file:
-            if user.avatar_url:
-                self.__cloud_uploader.delete_file(user.avatar_url)
-            user.avatar_url = self.__cloud_uploader.upload_file(avatar_file, folder='users')
+        if user.avatar_url and user.avatar_url != User.__table__.c.avatar_url.default.arg:
+            self.__cloud_uploader.delete_file(user.avatar_url)
+        user.avatar_url = self.__cloud_uploader.upload_file(avatar_file, folder='users')
 
         for key, value in data.items():
             setattr(user, key, value)
@@ -72,6 +72,7 @@ class UserService:
         if user.id != current_user_id:
             raise PermissionDenied(f'You don`t have permission to delete this user')
 
-        self.__cloud_uploader.delete_file(user.avatar_url)
+        if user.avatar_url != User.__table__.c.avatar_url.default.arg:
+            self.__cloud_uploader.delete_file(user.avatar_url)
 
         return True

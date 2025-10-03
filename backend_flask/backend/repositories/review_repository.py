@@ -28,10 +28,6 @@ class ReviewRepository(BaseRepository[Reviews]):
             )
             .first()
         )
-        print("DEBUG: Checking has_any_review")
-        print("User ID:", user_id, type(user_id))
-        print("Recipe ID:", recipe_id, type(recipe_id))
-        print("Found review:", review)
         return review is not None
 
     def has_approved_review(self, user_id: UUID, recipe_id: UUID) -> bool:

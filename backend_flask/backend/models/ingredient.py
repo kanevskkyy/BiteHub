@@ -5,7 +5,7 @@ from sqlalchemy_utils import URLType
 from backend.extensions import db
 
 
-class Ingredients(db.Model):
+class Ingredient(db.Model):
     __tablename__ = 'ingredients'
 
     id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
