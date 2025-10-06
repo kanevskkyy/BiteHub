@@ -4,3 +4,4 @@ from .recipe_repository import RecipeRepository
 from .review_repository import ReviewRepository
 from .role_repository import RoleRepository
 from .user_repository import UserRepository
+from .refresh_token_repository import RefreshTokenRepository

@@ -48,10 +48,19 @@ class RefreshTokenResource(Resource):
         super().__init__(**kwargs)
         self._auth_service = auth_service
 
-    @jwt_required_custom(refresh=True)
     def post(self):
-        access_token = self._auth_service.refresh_access_token()
-        return {'accessToken': access_token}, 200
+        auth_header = request.headers.get('Authorization', '')
+        if not auth_header.startswith('Bearer '):
+            return {
+                'message': 'Missing or invalid Authorization header'
+            }, 401
+
+        refresh_token_str = auth_header.split(' ')[1]
+
+        access_token = self._auth_service.refresh_access_token(refresh_token_str)
+        return {
+            'accessToken': access_token
+        }, 200
 
 
 @auth_namespace.route('/change-password/')
@@ -66,7 +75,9 @@ class ChangePasswordResource(Resource):
     def post(self):
         data = change_password_schema.load(request.get_json())
         self._auth_service.change_password(data)
-        return {'message': 'Password changed successfully'}, 200
+        return {
+            'message': 'Password changed successfully'
+        }, 200
 
 
 @auth_namespace.route('/check-username/<string:username>/')
@@ -80,3 +91,18 @@ class CheckUsernameResource(Resource):
     def get(self, username):
         result = self._auth_service.check_username_exist(username)
         return result, 200
+
+
+@auth_namespace.route('/logout/')
+class LogoutResource(Resource):
+    @inject
+    def __init__(self, auth_service: AuthService, **kwargs):
+        super().__init__(**kwargs)
+        self._auth_service = auth_service
+
+    @jwt_required_custom()
+    def post(self):
+        self._auth_service.logout_user()
+        return {
+            'message': 'Logged out successfully'
+        }, 200

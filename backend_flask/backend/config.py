@@ -35,3 +35,4 @@ class Config:
     DEBUG = config('DEBUG', default=True, cast=bool)
 
     CORS_ORIGINS = config('ALLOWED_ORIGIN', default='*')
+    REDIS_URL = config('REDIS_URL', default='redis://localhost:6379')

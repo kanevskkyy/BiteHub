@@ -5,9 +5,9 @@ from injector import inject
 from werkzeug.datastructures import FileStorage
 
 from backend import CloudinaryUploader
-from backend.models import User
+from backend.models import User, RefreshToken
 from backend.exceptions import AlreadyExists, NotFound, ValidationError
-from backend.repositories import UserRepository, RoleRepository
+from backend.repositories import UserRepository, RoleRepository, RefreshTokenRepository
 from backend.schemas.auth.token_schema import token_schema
 
 
@@ -24,10 +24,12 @@ class AuthService:
      """
 
     @inject
-    def __init__(self, user_repository: UserRepository, role_repository: RoleRepository, cloud_uploader: CloudinaryUploader):
+    def __init__(self, user_repository: UserRepository, role_repository: RoleRepository,
+                 cloud_uploader: CloudinaryUploader, refresh_token_repository: RefreshTokenRepository):
         self.__user_repository = user_repository
         self.__role_repository = role_repository
         self.__cloud_uploader = cloud_uploader
+        self.__refresh_token_repository = refresh_token_repository
 
     def check_username_exist(self, username) -> dict:
         exist = self.__user_repository.is_username_exist(username)
@@ -66,6 +68,9 @@ class AuthService:
             identity=created_user.id
         )
 
+        refresh_token_obj = RefreshToken(user_id=created_user.id, token=refresh_token)
+        self.__refresh_token_repository.create(refresh_token_obj)
+
         return token_schema.dump(
             {
                 'accessToken': access_token,
@@ -87,21 +92,25 @@ class AuthService:
                 'role': user.role.name
             }
         )
+
         refresh_token = create_refresh_token(identity=user.id)
+        refresh_token_obj = RefreshToken(user_id=user.id, token=refresh_token)
+        self.__refresh_token_repository.create(refresh_token_obj)
 
         return token_schema.dump({'accessToken': access_token, 'refreshToken': refresh_token})
 
-    def refresh_access_token(self) -> str:
-        current_user_id = get_jwt_identity()
-        user = self.__user_repository.get_by_id(current_user_id)
+    def refresh_access_token(self, refresh_token: str) -> str:
+        token_in_db = self.__refresh_token_repository.get_by_token(refresh_token)
+        if not token_in_db:
+            raise ValidationError('Invalid refresh token!')
+
+        user = self.__user_repository.get_by_id(token_in_db.user_id)
         if not user:
             raise NotFound('Cannot find user with this id')
 
         access_token = create_access_token(
             identity=user.id,
-            additional_claims={
-                'role': user.role.name
-            }
+            additional_claims={'role': user.role.name}
         )
         return access_token
 
@@ -119,4 +128,9 @@ class AuthService:
 
         user.set_password(data['new_password'])
         self.__user_repository.update(user)
+        return True
+
+    def logout_user(self) -> bool:
+        current_user_id = get_jwt_identity()
+        self.__refresh_token_repository.delete_by_user_id(current_user_id)
         return True

@@ -4,7 +4,7 @@ from backend import CloudinaryUploader
 from backend.extensions import db
 from backend.repositories import (CategoryRepository, IngredientRepository,
                                   UserRepository, ReviewRepository,
-                                  RecipeRepository, RoleRepository)
+                                  RecipeRepository, RoleRepository, RefreshTokenRepository)
 from backend.service import (CategoryService, IngredientsService,
                              UserService, AuthService,
                              ReviewService, RecipeService)
@@ -23,6 +23,7 @@ class DIConfig:
         binder.bind(ReviewRepository, to=ReviewRepository, scope=singleton)
         binder.bind(RecipeRepository, to=RecipeRepository, scope=singleton)
         binder.bind(RoleRepository, to=RoleRepository, scope=singleton)
+        binder.bind(RefreshTokenRepository, to=RefreshTokenRepository, scope=singleton)
 
 
     @staticmethod

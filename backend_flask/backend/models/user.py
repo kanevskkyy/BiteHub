@@ -25,6 +25,8 @@ class User(db.Model):
                            default='https://res.cloudinary.com/dkdljnfja/image/upload/v1759502757/Profile_Avatar_phwxy8.png')
 
     role_id = db.Column(UUID(as_uuid=True), db.ForeignKey('roles.id'), nullable=False)
+
+    refresh_tokens = db.relationship('RefreshToken', back_populates='user', cascade='all, delete-orphan')
     role = db.relationship('Role', backref='users', lazy=True)
 
     def set_password(self, password: str) -> None:

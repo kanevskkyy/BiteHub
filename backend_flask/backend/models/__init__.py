@@ -8,3 +8,4 @@ from .review_status import ReviewStatus
 from .review import Reviews
 from .recipe_categories import RecipeCategory
 from .recipe_step import RecipeStep
+from .refresh_token import RefreshToken
